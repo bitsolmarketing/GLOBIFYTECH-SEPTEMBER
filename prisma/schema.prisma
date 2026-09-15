@@ -1965,6 +1965,7 @@ model Invoice {
   discount         Discount?         @relation(fields: [discountId], references: [id], onDelete: SetNull)
   scholarshipAward ScholarshipAward? @relation(fields: [scholarshipAwardId], references: [id], onDelete: SetNull)
   issuedBy         User?             @relation("InvoiceIssuer", fields: [issuedById], references: [id], onDelete: SetNull)
+  pdf              Media?            @relation("InvoicePdf", fields: [pdfMediaId], references: [id], onDelete: SetNull)
   lines            InvoiceLine[]
   payments         Payment[]
   refunds          Refund[]
@@ -2536,6 +2537,7 @@ model Media {
   liveRecordings     LiveClassRecording[]
   applicationDocs    ApplicationDocument[]
   certificatePdfs    Certificate[]         @relation("CertificatePdf")
+  invoicePdfs        Invoice[]             @relation("InvoicePdf")
   employerLogos      Employer[]            @relation("EmployerLogo")
   portfolioCovers    PortfolioProject[]    @relation("PortfolioCover")
   pageOgs            Page[]                @relation("PageOg")
