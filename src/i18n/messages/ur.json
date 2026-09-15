@@ -1,0 +1,5 @@
+{
+  "common": { "brand": "گلوبیفائی ٹیک", "tagline": "آج سیکھیں۔ کل قیادت کریں۔", "loading": "لوڈ ہو رہا ہے…", "save": "محفوظ کریں", "cancel": "منسوخ", "search": "تلاش" },
+  "nav": { "home": "ہوم", "courses": "کورسز", "programs": "پروگرامز", "blog": "بلاگ", "about": "ہمارے بارے میں", "contact": "رابطہ", "signIn": "سائن ان", "signUp": "سیکھنا شروع کریں" },
+  "home": { "headline1": "آج سیکھیں۔", "headline2": "کل قیادت کریں۔", "primaryCta": "کورسز دیکھیں", "secondaryCta": "سیکھنا شروع کریں" }
+}

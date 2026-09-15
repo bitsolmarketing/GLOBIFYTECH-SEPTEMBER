@@ -1,0 +1,5 @@
+{
+  "common": { "brand": "گلوبیفائی ٹیک", "tagline": "اج سکھو۔ کل اگوائی کرو۔", "loading": "لوڈ ہو رہیا اے…", "save": "محفوظ کرو", "cancel": "منسوخ", "search": "لبھو" },
+  "nav": { "home": "گھر", "courses": "کورس", "programs": "پروگرام", "blog": "بلاگ", "about": "ساڈے بارے", "contact": "رابطہ", "signIn": "سائن ان", "signUp": "سکھنا شروع کرو" },
+  "home": { "headline1": "اج سکھو۔", "headline2": "کل اگوائی کرو۔", "primaryCta": "کورس ویکھو", "secondaryCta": "سکھنا شروع کرو" }
+}

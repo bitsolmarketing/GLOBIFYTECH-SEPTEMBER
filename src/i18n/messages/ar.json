@@ -1,0 +1,5 @@
+{
+  "common": { "brand": "غلوبيفاي تك", "tagline": "تعلّم اليوم. قُد الغد.", "loading": "جارٍ التحميل…", "save": "حفظ", "cancel": "إلغاء", "search": "بحث" },
+  "nav": { "home": "الرئيسية", "courses": "الدورات", "programs": "البرامج", "blog": "المدونة", "about": "من نحن", "contact": "اتصل بنا", "signIn": "تسجيل الدخول", "signUp": "ابدأ التعلم" },
+  "home": { "headline1": "تعلّم اليوم.", "headline2": "قُد الغد.", "primaryCta": "استكشف الدورات", "secondaryCta": "ابدأ التعلم" }
+}
