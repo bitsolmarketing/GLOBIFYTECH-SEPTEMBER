@@ -57,8 +57,8 @@ export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
   if (error && typeof error === "object" && "code" in error) {
     const code = (error as { code?: string }).code;
-    if (code === "FORBIDDEN") return AppError.forbidden((error as Error).message);
-    if (code === "UNAUTHENTICATED") return AppError.unauthenticated((error as Error).message);
+    if (code === "FORBIDDEN") return AppError.forbidden((error as unknown as Error).message);
+    if (code === "UNAUTHENTICATED") return AppError.unauthenticated((error as unknown as Error).message);
     // Prisma unique constraint
     if (code === "P2002") return AppError.conflict("A record with those details already exists.");
     if (code === "P2025") return AppError.notFound();

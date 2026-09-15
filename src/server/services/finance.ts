@@ -1,6 +1,6 @@
 import "server-only";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { prisma, type Prisma } from "@/server/db/prisma";
+import { prisma, Prisma } from "@/server/db/prisma";
 import { AppError } from "@/server/errors";
 import { notify, notifyRole } from "./notifications";
 import { getSetting } from "./settings";
@@ -126,7 +126,7 @@ export async function createInvoiceFromFeePlan(params: { studentId: string; enro
   if (!plan) throw AppError.notFound("Fee plan");
   const lines = plan.installments.length
     ? plan.installments.map((i) => ({ description: `${plan.course.title} — ${i.label}`, quantity: 1, unitAmount: toNumber(i.amount), dueDate: new Date(Date.now() + i.dueAfterDays * 86400000) }))
-    : [{ description: `${plan.course.title} — ${plan.name}`, quantity: 1, unitAmount: toNumber(plan.totalAmount) }];
+    : [{ description: `${plan.course.title} — ${plan.name}`, quantity: 1, unitAmount: toNumber(plan.totalAmount), dueDate: null as Date | null }];
   return createInvoice({ studentId: params.studentId, enrollmentId: params.enrollmentId, feePlanId: plan.id, issuedById: params.issuedById, discountCode: params.discountCode, scholarshipAwardId: params.scholarshipAwardId, lines, dueDate: lines[0]?.dueDate ?? null });
 }
 

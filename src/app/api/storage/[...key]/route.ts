@@ -14,7 +14,7 @@ function keyFrom(params: { key: string[] }) {
   return key;
 }
 
-export async function PUT(req: Request, ctx: RouteContext<"/api/storage/[...key]">) {
+export async function PUT(req: Request, ctx: { params: Promise<{ key: string[] }> }) {
   if (process.env.STORAGE_DRIVER === "s3") return NextResponse.json({ error: { code: "NOT_FOUND", message: "Not found." } }, { status: 404 });
   const key = keyFrom(await ctx.params);
   if (!key) return NextResponse.json({ error: { code: "VALIDATION", message: "Invalid key." } }, { status: 400 });
@@ -32,7 +32,7 @@ export async function PUT(req: Request, ctx: RouteContext<"/api/storage/[...key]
   return new NextResponse(null, { status: 204 });
 }
 
-export async function GET(_req: Request, ctx: RouteContext<"/api/storage/[...key]">) {
+export async function GET(_req: Request, ctx: { params: Promise<{ key: string[] }> }) {
   const key = keyFrom(await ctx.params);
   if (!key) return new NextResponse("Not found", { status: 404 });
   const media = await prisma.media.findUnique({ where: { key }, select: { mime: true, fileName: true, deletedAt: true } });

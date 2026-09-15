@@ -46,7 +46,7 @@ export async function getPublicPortfolio(username: string) {
   const portfolio = await prisma.portfolio.findUnique({
     where: { username },
     include: {
-      student: { include: { user: { select: { name: true, avatar: { select: { url: true } } } }, skills: { include: { skill: true }, orderBy: { level: "desc" } }, certificates: { where: { status: "VALID" }, include: { course: { select: { title: true } } }, orderBy: { issuedAt: "desc" } }, badges: false } },
+      student: { include: { user: { select: { name: true, avatar: { select: { url: true } } } }, skills: { include: { skill: true }, orderBy: { level: "desc" } }, certificates: { where: { status: "VALID" }, include: { course: { select: { title: true } } }, orderBy: { issuedAt: "desc" } } } },
       projects: { where: { isVisible: true }, orderBy: { order: "asc" }, include: { cover: { select: { url: true, alt: true } } } },
     },
   });
