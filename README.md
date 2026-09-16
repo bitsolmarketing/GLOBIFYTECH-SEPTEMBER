@@ -153,6 +153,12 @@ See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full runbook. In short:
 
 ---
 
+## Continuous integration
+
+A ready workflow lives at [`docs/ci/github-actions-ci.yml`](docs/ci/github-actions-ci.yml). Copy it to `.github/workflows/ci.yml` to enable it: it runs migrations, the seed, typecheck, lint, the tests and a production build against a real PostgreSQL.
+
+---
+
 ## Licence
 
 Proprietary. © Globify Tech.
