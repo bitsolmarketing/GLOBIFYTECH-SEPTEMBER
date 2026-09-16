@@ -10,7 +10,7 @@ allowBuilds:
   '@swc/core': false
   msgpackr-extract: false
 
-# pnpm 12 blocks packages newer than 24h by default. The pinned AI SDK
+# Newer pnpm releases block packages under 24h old. The pinned AI SDK
 # versions were locked before that window closed; exempt only those.
 minimumReleaseAgeExclude:
   - ai
