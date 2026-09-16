@@ -28,7 +28,7 @@ export default async function AutomationPage() {
     prisma.webhookEvent.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.notification.count({ where: { status: "FAILED", createdAt: { gte: new Date(Date.now() - 7 * 86400000) } } }),
     prisma.studentRiskScore.findFirst({ orderBy: { computedAt: "desc" }, select: { computedAt: true } }),
-    prisma.setting.findUnique({ where: { key: "system.lastBackupAt" }, select: { value: true, updatedAt: true } }),
+    prisma.setting.findUnique({ where: { key: "backup.lastHeartbeat" }, select: { value: true, updatedAt: true } }),
   ]);
   const e = env();
   const queue = e.REDIS_URL ? "Redis + BullMQ worker" : "In-process (no Redis configured)";

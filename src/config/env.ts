@@ -70,6 +70,7 @@ const schema = z.object({
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional(),
   BACKUP_HEARTBEAT_SECRET: z.string().optional(),
+  CRON_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof schema>;
