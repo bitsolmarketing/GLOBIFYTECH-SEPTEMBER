@@ -42,6 +42,9 @@ export function matchJob(student: MatchStudent, job: MatchJob): MatchResult {
     }
   }
   let percent = possible ? (earned / possible) * 100 : 0;
-  if (!job.isRemote && job.location && student.city && job.location.toLowerCase().includes(student.city.toLowerCase())) percent = Math.min(100, percent + 5);
+  // Living near the employer is a tie-breaker between candidates who already
+  // have some of the skills, never a reason to show a match on its own.
+  const localBoost = matched.length > 0 && !job.isRemote && job.location && student.city && job.location.toLowerCase().includes(student.city.toLowerCase());
+  if (localBoost) percent = Math.min(100, percent + 5);
   return { percent: Math.round(percent), matchedSkillIds: matched, missingRequiredSkillIds: missingRequired };
 }
