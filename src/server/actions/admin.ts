@@ -745,3 +745,16 @@ export const impersonationCheckAction = (): R<{ allowed: boolean }> =>
     const user = await requireUser();
     return { allowed: (await import("@/lib/rbac")).can(user, "users.impersonate") };
   });
+
+// ───────────── Lookups used by admin forms ─────────────
+
+export const searchStudentsAction = (q: string): R<Array<{ id: string; label: string; email: string }>> =>
+  wrap(async () => {
+    await requirePermission("students.read");
+    const term = q.trim();
+    if (term.length < 2) return [];
+    const rows = await prisma.studentProfile.findMany({ where: { user: { deletedAt: null, OR: [{ name: { contains: term, mode: "insensitive" } }, { email: { contains: term, mode: "insensitive" } }, { phone: { contains: term } }] } }, take: 15, orderBy: { createdAt: "desc" }, select: { id: true, studentNumber: true, user: { select: { name: true, email: true } } } });
+    const byNumber = await prisma.studentProfile.findMany({ where: { studentNumber: { contains: term, mode: "insensitive" } }, take: 5, select: { id: true, studentNumber: true, user: { select: { name: true, email: true } } } });
+    const seen = new Set<string>();
+    return [...rows, ...byNumber].filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true))).map((r) => ({ id: r.id, label: `${r.user.name} · ${r.studentNumber}`, email: r.user.email }));
+  });
