@@ -9,3 +9,9 @@ allowBuilds:
   '@parcel/watcher': false
   '@swc/core': false
   msgpackr-extract: false
+
+# pnpm 12 blocks packages newer than 24h by default. The pinned AI SDK
+# versions were locked before that window closed; exempt only those.
+minimumReleaseAgeExclude:
+  - ai
+  - '@ai-sdk/*'
