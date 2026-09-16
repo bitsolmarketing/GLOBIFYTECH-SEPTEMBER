@@ -1,5 +1,5 @@
 import "server-only";
-import { prisma } from "@/server/db/prisma";
+import { prisma, Prisma } from "@/server/db/prisma";
 import { can, type Permission } from "@/lib/rbac";
 import type { SessionUser } from "@/server/auth/session";
 
@@ -15,9 +15,43 @@ export interface SearchProvider {
   search(query: string, user: SessionUser, limit?: number): Promise<SearchHit[]>;
 }
 
+/** Tables carrying a generated `search_vector` column (see the search migration). */
+type FtsTable = "courses" | "lessons" | "blog_posts" | "pages" | "discussions";
+
 /**
- * PostgreSQL search provider. Uses ILIKE + trigram-friendly patterns per entity
- * and applies the caller's permissions so results never leak across roles.
+ * Ranked full-text matches for one table, best first.
+ *
+ * Uses the generated tsvector columns so multi-word queries match titles and
+ * body text with proper stemming. Returns an empty list when the query has no
+ * usable terms or the column is missing (for example on a database where the
+ * search migration has not run yet), and the caller falls back to ILIKE.
+ */
+async function ftsIds(table: FtsTable, query: string, limit: number): Promise<string[]> {
+  try {
+    const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id
+      FROM ${Prisma.raw(`"${table}"`)}
+      WHERE search_vector @@ websearch_to_tsquery('english', ${query})
+      ORDER BY ts_rank(search_vector, websearch_to_tsquery('english', ${query})) DESC
+      LIMIT ${limit}
+    `;
+    return rows.map((r) => r.id);
+  } catch {
+    return [];
+  }
+}
+
+/** Keeps full-text hits in rank order, then appends anything ILIKE also found. */
+function byRank<T extends { id: string }>(rows: T[], ranked: string[]): T[] {
+  if (!ranked.length) return rows;
+  const order = new Map(ranked.map((id, i) => [id, i]));
+  return [...rows].sort((a, b) => (order.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (order.get(b.id) ?? Number.MAX_SAFE_INTEGER));
+}
+
+/**
+ * PostgreSQL search provider. Combines the generated full-text vectors with
+ * ILIKE matching for partial words, and applies the caller's permissions so
+ * results never leak across roles.
  * Swap for an OpenSearch provider by implementing `SearchProvider`.
  */
 class PostgresSearchProvider implements SearchProvider {
@@ -31,13 +65,15 @@ class PostgresSearchProvider implements SearchProvider {
     const isInstructor = user.roles.includes("INSTRUCTOR") || user.roles.includes("TEACHING_ASSISTANT");
 
     // Courses: everyone sees published; staff sees drafts too.
+    const courseIds = await ftsIds("courses", q, limit);
     tasks.push(
       prisma.course
         .findMany({
-          where: { deletedAt: null, ...(allowed("courses.read") ? {} : { status: "PUBLISHED" }), OR: [{ title: like }, { subtitle: like }, { slug: like }] },
+          where: { deletedAt: null, ...(allowed("courses.read") ? {} : { status: "PUBLISHED" }), OR: [{ title: like }, { subtitle: like }, { slug: like }, ...(courseIds.length ? [{ id: { in: courseIds } }] : [])] },
           take: limit,
           select: { id: true, slug: true, title: true, subtitle: true, status: true },
         })
+        .then((rows) => byRank(rows, courseIds))
         .then((rows) =>
           rows.map((c) => ({
             id: c.id,
@@ -89,16 +125,20 @@ class PostgresSearchProvider implements SearchProvider {
       );
     }
     if (allowed("cms.blog.manage")) {
+      const postIds = await ftsIds("blog_posts", q, limit);
       tasks.push(
         prisma.blogPost
-          .findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }] }, take: limit, select: { id: true, title: true, status: true } })
+          .findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }, ...(postIds.length ? [{ id: { in: postIds } }] : [])] }, take: limit, select: { id: true, title: true, status: true } })
+          .then((rows) => byRank(rows, postIds))
           .then((rows) => rows.map((p) => ({ id: p.id, type: "blog" as const, title: p.title, subtitle: p.status, href: `/admin/blog/${p.id}` }))),
       );
     }
     if (allowed("cms.pages.manage")) {
+      const pageIds = await ftsIds("pages", q, limit);
       tasks.push(
         prisma.page
-          .findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }] }, take: limit, select: { id: true, title: true, slug: true } })
+          .findMany({ where: { deletedAt: null, OR: [{ title: like }, { slug: like }, ...(pageIds.length ? [{ id: { in: pageIds } }] : [])] }, take: limit, select: { id: true, title: true, slug: true } })
+          .then((rows) => byRank(rows, pageIds))
           .then((rows) => rows.map((p) => ({ id: p.id, type: "page" as const, title: p.title, subtitle: `/${p.slug}`, href: `/admin/pages/${p.id}` }))),
       );
     }
@@ -112,13 +152,15 @@ class PostgresSearchProvider implements SearchProvider {
     if (isStudent) {
       const student = await prisma.studentProfile.findUnique({ where: { userId: user.id }, select: { id: true } });
       if (student) {
+        const lessonIds = await ftsIds("lessons", q, limit);
         tasks.push(
           prisma.lesson
             .findMany({
-              where: { title: like, unit: { module: { course: { enrollments: { some: { studentId: student.id } } } } } },
+              where: { OR: [{ title: like }, ...(lessonIds.length ? [{ id: { in: lessonIds } }] : [])], unit: { module: { course: { enrollments: { some: { studentId: student.id } } } } } },
               take: limit,
               select: { id: true, title: true, unit: { select: { module: { select: { courseId: true, course: { select: { title: true } } } } } } },
             })
+            .then((rows) => byRank(rows, lessonIds))
             .then((rows) => rows.map((l) => ({ id: l.id, type: "lesson" as const, title: l.title, subtitle: l.unit.module.course.title, href: `/student/course/${l.unit.module.courseId}?lesson=${l.id}` }))),
         );
       }
