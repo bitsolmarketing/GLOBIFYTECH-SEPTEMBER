@@ -758,3 +758,12 @@ export const searchStudentsAction = (q: string): R<Array<{ id: string; label: st
     const seen = new Set<string>();
     return [...rows, ...byNumber].filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true))).map((r) => ({ id: r.id, label: `${r.user.name} · ${r.studentNumber}`, email: r.user.email }));
   });
+
+export const runPaymentRemindersAction = (): R =>
+  wrap(async () => {
+    const user = await requirePermission("payments.create");
+    await finance.runPaymentReminders();
+    await audit({ actorId: user.id, actorRoles: user.roles, action: "payment.reminders", entityType: "Invoice" });
+    revalidatePath("/admin/payments");
+    revalidatePath("/admin/invoices");
+  });

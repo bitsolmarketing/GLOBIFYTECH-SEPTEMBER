@@ -255,7 +255,7 @@ export async function listInvoices(filters: { q?: string; status?: InvoiceStatus
 }
 
 export async function getInvoice(invoiceId: string) {
-  const inv = await prisma.invoice.findFirst({ where: { id: invoiceId, deletedAt: null }, include: { lines: { orderBy: { order: "asc" } }, payments: { orderBy: { createdAt: "desc" }, include: { receipt: true, recordedBy: { select: { name: true } } } }, refunds: { orderBy: { createdAt: "desc" } }, student: { include: { user: { select: { name: true, email: true, phone: true } } } }, enrollment: { include: { course: { select: { id: true, title: true } }, batch: { select: { code: true } } } }, discount: true, feePlan: true, issuedBy: { select: { name: true } } } });
+  const inv = await prisma.invoice.findFirst({ where: { id: invoiceId, deletedAt: null }, include: { lines: { orderBy: { order: "asc" } }, payments: { orderBy: { createdAt: "desc" }, include: { receipt: true, recordedBy: { select: { name: true } } } }, refunds: { orderBy: { createdAt: "desc" } }, student: { include: { user: { select: { name: true, email: true, phone: true } } } }, enrollment: { include: { course: { select: { id: true, title: true } }, batch: { select: { code: true } } } }, discount: true, feePlan: true, issuedBy: { select: { name: true } }, pdf: { select: { url: true } } } });
   if (!inv) throw AppError.notFound("Invoice");
   return inv;
 }
