@@ -260,6 +260,7 @@ async function main() {
   console.log(`  admin         admin@globifytech.com / ${PASSWORD}`);
   console.log(`  instructor    zeeshan@globifytech.com / ${PASSWORD}`);
   console.log(`  student       ${slugify(STUDENT_NAMES[0]!).replace(/-/g, ".")}@example.com / ${PASSWORD}`);
+  console.log(`  employer      hiring@systems.example.com / ${PASSWORD}`);
 }
 
 // ───────── Batches, enrollments, progress, attendance, finance ─────────
@@ -494,7 +495,30 @@ async function seedCareer(ctx: { skillIds: Map<string, string>; studentIds: stri
       }
     }
   }
-  console.log(`  career: ${EMPLOYERS.length} employers with open roles`);
+  // A hiring-partner login so the employer portal can be seen end to end.
+  const partner = await prisma.employer.findFirst({ where: { slug: slugify(EMPLOYERS[0]!.name) }, select: { id: true } });
+  if (partner) {
+    const roleId = (await prisma.role.findUnique({ where: { key: "EMPLOYER" }, select: { id: true } }))?.id;
+    const user = await prisma.user.upsert({
+      where: { email: "hiring@systems.example.com" },
+      update: {},
+      create: { email: "hiring@systems.example.com", name: "Sarfraz Ahmed", passwordHash: await bcrypt.hash(PASSWORD, 12), emailVerifiedAt: new Date(), status: "ACTIVE", isTestData: true },
+    });
+    if (roleId) await prisma.userRole.upsert({ where: { userId_roleId: { userId: user.id, roleId } }, update: {}, create: { userId: user.id, roleId } });
+    await prisma.employerProfile.upsert({ where: { userId: user.id }, update: {}, create: { userId: user.id, employerId: partner.id, jobTitle: "Talent Lead" } });
+
+    // A few applications so the portal has something to work with.
+    const job = await prisma.job.findFirst({ where: { employerId: partner.id }, select: { id: true } });
+    const students = await prisma.studentProfile.findMany({ take: 3, select: { id: true } });
+    if (job) {
+      for (const [i, student] of students.entries()) {
+        const exists = await prisma.jobApplication.findFirst({ where: { jobId: job.id, studentId: student.id } });
+        if (exists) continue;
+        await prisma.jobApplication.create({ data: { jobId: job.id, studentId: student.id, status: pick(["APPLIED", "SHORTLISTED", "INTERVIEW"], i), matchScore: rand(55, 95), coverLetter: "I have built three projects with this stack and would like to bring them to your team." } });
+      }
+    }
+  }
+  console.log(`  career: ${EMPLOYERS.length} employers with open roles, 1 hiring-partner login`);
 }
 
 // ───────── CMS: pages, navigation, blog, testimonials, FAQs, events ─────────
