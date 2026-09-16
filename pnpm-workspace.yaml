@@ -6,6 +6,6 @@ allowBuilds:
   prisma: true
   esbuild: true
   bcrypt: false
-  '@parcel/watcher': set this to true or false
-  '@swc/core': set this to true or false
-  msgpackr-extract: set this to true or false
+  '@parcel/watcher': false
+  '@swc/core': false
+  msgpackr-extract: false
