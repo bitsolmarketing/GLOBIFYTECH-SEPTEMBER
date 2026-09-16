@@ -42,6 +42,7 @@ next-env.d.ts
 
 # keep the example env
 !.env.example
+!.env.production.example
 
 # local storage driver + generated
 /.storage
