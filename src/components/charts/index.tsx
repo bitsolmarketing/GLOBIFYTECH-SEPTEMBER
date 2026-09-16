@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn, formatMoney } from "@/lib/utils";
 
 /**
  * Restrained chart wrappers on Recharts. One accent series by default, muted
@@ -10,14 +10,26 @@ import { cn } from "@/lib/utils";
  */
 const COLORS = ["var(--accent)", "var(--accent-2)", "var(--accent-3)", "var(--success)", "var(--warning)"];
 
-function ChartTooltip({ active, payload, label, format }: { active?: boolean; payload?: Array<{ value: number; name: string; color?: string }>; label?: string; format?: (v: number) => string }) {
+/**
+ * Charts run on the client, so a formatter cannot be handed down as a function
+ * from a server component. Callers pass a token and the chart resolves it.
+ */
+export type ValueFormat = "number" | "money" | "percent";
+
+function formatValue(value: number, format?: ValueFormat): string {
+  if (format === "money") return formatMoney(value);
+  if (format === "percent") return `${value}%`;
+  return String(value);
+}
+
+function ChartTooltip({ active, payload, label, format }: { active?: boolean; payload?: Array<{ value: number; name: string; color?: string }>; label?: string; format?: ValueFormat }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-md border border-border bg-surface-raised px-3 py-2 text-caption shadow-md">
       <p className="mb-1 font-medium text-fg">{label}</p>
       {payload.map((p) => (
         <p key={p.name} className="flex items-center gap-2 text-fg-muted">
-          <span className="size-2 rounded-full" style={{ background: p.color }} /> {p.name}: <span className="tabular-nums text-fg">{format ? format(p.value) : p.value}</span>
+          <span className="size-2 rounded-full" style={{ background: p.color }} /> {p.name}: <span className="tabular-nums text-fg">{formatValue(p.value, format)}</span>
         </p>
       ))}
     </div>
@@ -34,7 +46,7 @@ const shortDate = (d: string) => {
   return Number.isNaN(dt.getTime()) ? d : dt.toLocaleDateString("en", { day: "numeric", month: "short" });
 };
 
-export function TrendChart({ data, height = 220, kind = "area", format, className, name = "Value", color = COLORS[0] }: { data: SeriesPoint[]; height?: number; kind?: "area" | "line"; format?: (v: number) => string; className?: string; name?: string; color?: string }) {
+export function TrendChart({ data, height = 220, kind = "area", format, className, name = "Value", color = COLORS[0] }: { data: SeriesPoint[]; height?: number; kind?: "area" | "line"; format?: ValueFormat; className?: string; name?: string; color?: string }) {
   const id = React.useId();
   return (
     <div className={cn("w-full", className)} style={{ height }}>
@@ -49,7 +61,7 @@ export function TrendChart({ data, height = 220, kind = "area", format, classNam
             </defs>
             <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
             <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} minTickGap={24} />
-            <YAxis tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => (format ? format(v) : String(v))} />
+            <YAxis tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => formatValue(v, format)} />
             <Tooltip content={<ChartTooltip format={format} />} cursor={{ stroke: "var(--border-strong)" }} />
             <Area type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={2} fill={`url(#${id})`} dot={false} activeDot={{ r: 4 }} />
           </AreaChart>
@@ -57,7 +69,7 @@ export function TrendChart({ data, height = 220, kind = "area", format, classNam
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
             <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} minTickGap={24} />
-            <YAxis tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => (format ? format(v) : String(v))} />
+            <YAxis tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => formatValue(v, format)} />
             <Tooltip content={<ChartTooltip format={format} />} cursor={{ stroke: "var(--border-strong)" }} />
             <Line type="monotone" dataKey="value" name={name} stroke={color} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
           </LineChart>
@@ -67,7 +79,7 @@ export function TrendChart({ data, height = 220, kind = "area", format, classNam
   );
 }
 
-export function BarsChart({ data, height = 220, format, className, name = "Value", labelKey = "label", horizontal, color = COLORS[0] }: { data: Array<Record<string, string | number>>; height?: number; format?: (v: number) => string; className?: string; name?: string; labelKey?: string; horizontal?: boolean; color?: string }) {
+export function BarsChart({ data, height = 220, format, className, name = "Value", labelKey = "label", horizontal, color = COLORS[0] }: { data: Array<Record<string, string | number>>; height?: number; format?: ValueFormat; className?: string; name?: string; labelKey?: string; horizontal?: boolean; color?: string }) {
   return (
     <div className={cn("w-full", className)} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -75,13 +87,13 @@ export function BarsChart({ data, height = 220, format, className, name = "Value
           <CartesianGrid horizontal={!horizontal} vertical={horizontal} stroke="var(--border)" strokeDasharray="3 3" />
           {horizontal ? (
             <>
-              <XAxis type="number" tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} tickFormatter={(v) => (format ? format(v) : String(v))} />
+              <XAxis type="number" tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} tickFormatter={(v) => formatValue(v, format)} />
               <YAxis type="category" dataKey={labelKey} tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={110} />
             </>
           ) : (
             <>
               <XAxis dataKey={labelKey} tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => (format ? format(v) : String(v))} />
+              <YAxis tick={{ fontSize: 11, fill: "var(--fg-subtle)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => formatValue(v, format)} />
             </>
           )}
           <Tooltip content={<ChartTooltip format={format} />} cursor={{ fill: "var(--bg-muted)" }} />

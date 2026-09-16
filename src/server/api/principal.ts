@@ -4,8 +4,9 @@ import { getSession, type SessionUser } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
 import { AppError } from "@/server/errors";
 import { can, type Permission, type RoleKey } from "@/lib/rbac";
+import { isSecureRequest, sessionCookieName } from "@/lib/auth-cookie";
 
-const COOKIE_NAME = process.env.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token";
+
 
 /**
  * Resolves the caller for /api/v1 routes: a Bearer session JWT (mobile) or the
@@ -16,7 +17,10 @@ export async function getApiPrincipal(req: Request): Promise<SessionUser | null>
   const header = req.headers.get("authorization");
   if (header?.startsWith("Bearer ")) {
     const token = header.slice(7).trim();
-    const payload = await decode({ token, secret: process.env.AUTH_SECRET!, salt: COOKIE_NAME }).catch(() => null);
+    const salt = sessionCookieName(isSecureRequest(req.headers));
+    const payload =
+      (await decode({ token, secret: process.env.AUTH_SECRET!, salt }).catch(() => null)) ??
+      (await decode({ token, secret: process.env.AUTH_SECRET!, salt: sessionCookieName(salt === "authjs.session-token") }).catch(() => null));
     if (!payload?.sub) return null;
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },

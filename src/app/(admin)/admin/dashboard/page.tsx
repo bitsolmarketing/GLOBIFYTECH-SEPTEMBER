@@ -52,7 +52,7 @@ export default async function AdminDashboard() {
       <section className="grid gap-4 lg:grid-cols-3">
         <div className="surface p-5 lg:col-span-2">
           <div className="mb-3 flex items-center justify-between"><p className="text-h4">Revenue, last 30 days</p><Delta value={k.revenue.delta} suffix="%" /></div>
-          <TrendChart data={o.revenueSeries} format={(v) => formatMoney(v)} name="Revenue" />
+          <TrendChart data={o.revenueSeries} format="money" name="Revenue" />
         </div>
         <div className="surface p-5">
           <p className="text-h4 mb-3">Admissions funnel</p>

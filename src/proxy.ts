@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { SURFACE_ROLES, type RoleKey } from "@/lib/rbac/permissions";
+import { isSecureRequest } from "@/lib/auth-cookie";
 
 /**
  * Edge-level gate. Coarse checks only (is there a session? does a role match the
@@ -29,11 +30,12 @@ export default async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-request-id", requestId);
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: process.env.NODE_ENV === "production",
-  });
+  const secure = isSecureRequest(request.headers, request.nextUrl.protocol);
+  const token =
+    (await getToken({ req: request, secret: process.env.AUTH_SECRET, secureCookie: secure })) ??
+    // A TLS-terminating proxy can leave the scheme looking like http (or the
+    // reverse), so try the other cookie name before treating this as signed out.
+    (await getToken({ req: request, secret: process.env.AUTH_SECRET, secureCookie: !secure }));
   const roles = ((token?.roles as RoleKey[] | undefined) ?? []).filter(Boolean);
 
   // Signed-in users skip auth pages.

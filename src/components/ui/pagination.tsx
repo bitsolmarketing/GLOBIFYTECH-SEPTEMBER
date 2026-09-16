@@ -1,4 +1,7 @@
-"use client";
+// Deliberately not a client component: it renders plain links and is used from
+// server components, which cannot pass the hrefFor function across the
+// server/client boundary. It still works inside client components, where the
+// onPageChange handler applies.
 
 import * as React from "react";
 import Link from "next/link";
@@ -44,6 +47,14 @@ function Pagination({ page, pageSize, total, hrefFor, onPageChange, className }:
         <Link key={`${p}-${String(label)}`} href={hrefFor(p)} className={cls} aria-current={active ? "page" : undefined} aria-label={ariaLabel}>
           {label}
         </Link>
+      );
+    // Link mode renders on the server, where an onClick handler is not allowed,
+    // so an out-of-range arrow becomes inert markup rather than a button.
+    if (hrefFor)
+      return (
+        <span key={`${p}-${String(label)}`} className={cn(cls, "pointer-events-none opacity-50")} aria-hidden aria-label={ariaLabel}>
+          {label}
+        </span>
       );
     return (
       <button

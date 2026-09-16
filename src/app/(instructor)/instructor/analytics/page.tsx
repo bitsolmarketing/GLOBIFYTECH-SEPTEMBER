@@ -23,7 +23,7 @@ export default async function InstructorAnalyticsPage() {
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="surface p-5">
           <p className="text-h4 mb-3">Average progress by course</p>
-          <BarsChart data={data.courses.map((c) => ({ label: c.title.length > 24 ? `${c.title.slice(0, 23)}…` : c.title, value: c.avgProgress }))} format={(v) => `${v}%`} horizontal height={Math.max(200, data.courses.length * 40)} name="Avg progress" />
+          <BarsChart data={data.courses.map((c) => ({ label: c.title.length > 24 ? `${c.title.slice(0, 23)}…` : c.title, value: c.avgProgress }))} format="percent" horizontal height={Math.max(200, data.courses.length * 40)} name="Avg progress" />
         </div>
         <div className="surface p-5">
           <p className="text-h4 mb-3">Inactive students (7 days)</p>
@@ -48,7 +48,7 @@ export default async function InstructorAnalyticsPage() {
       {data.batches.length ? (
         <section className="surface p-5">
           <p className="text-h4 mb-3">Batch attendance</p>
-          <BarsChart data={data.batches.map((b) => ({ label: b.name, value: b.attendanceRate ?? 0 }))} format={(v) => `${v}%`} name="Attendance" color="var(--success)" height={Math.max(160, data.batches.length * 40)} horizontal />
+          <BarsChart data={data.batches.map((b) => ({ label: b.name, value: b.attendanceRate ?? 0 }))} format="percent" name="Attendance" color="var(--success)" height={Math.max(160, data.batches.length * 40)} horizontal />
         </section>
       ) : null}
     </div>

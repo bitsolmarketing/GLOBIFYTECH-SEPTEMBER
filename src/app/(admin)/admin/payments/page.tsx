@@ -38,8 +38,8 @@ export default async function PaymentsPage() {
         <StatTile icon={Receipt} label="Fee plans" value={fees.length} hint={`${fees.reduce((s, f) => s + f._count.invoices, 0)} invoices raised`} />
       </section>
       <section className="grid gap-4 lg:grid-cols-3">
-        <div className="surface p-5 lg:col-span-2"><p className="text-h4 mb-3">Collections, last 90 days</p><TrendChart data={analytics.revenueSeries} format={(v) => formatMoney(v)} name="Collected" /></div>
-        <div className="surface p-5"><p className="text-h4 mb-3">By provider</p><BarsChart data={analytics.revenueByProvider.map((p) => ({ label: enumLabel(p.provider), value: Math.round(p.value) }))} format={(v) => formatMoney(v)} horizontal height={Math.max(200, analytics.revenueByProvider.length * 36)} name="Collected" color="var(--success)" /></div>
+        <div className="surface p-5 lg:col-span-2"><p className="text-h4 mb-3">Collections, last 90 days</p><TrendChart data={analytics.revenueSeries} format="money" name="Collected" /></div>
+        <div className="surface p-5"><p className="text-h4 mb-3">By provider</p><BarsChart data={analytics.revenueByProvider.map((p) => ({ label: enumLabel(p.provider), value: Math.round(p.value) }))} format="money" horizontal height={Math.max(200, analytics.revenueByProvider.length * 36)} name="Collected" color="var(--success)" /></div>
       </section>
       <section className="grid gap-6 lg:grid-cols-2">
         <div>

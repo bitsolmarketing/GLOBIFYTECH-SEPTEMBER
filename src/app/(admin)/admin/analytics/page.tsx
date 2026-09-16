@@ -42,7 +42,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
       {tab === "overview" ? (
         <div className="flex flex-col gap-4">
           <section className="grid gap-4 lg:grid-cols-2">
-            <div className="surface p-5"><p className="text-h4 mb-3">Revenue</p><TrendChart data={data.revenueSeries} format={(v) => formatMoney(v)} name="Revenue" /></div>
+            <div className="surface p-5"><p className="text-h4 mb-3">Revenue</p><TrendChart data={data.revenueSeries} format="money" name="Revenue" /></div>
             <div className="surface p-5"><p className="text-h4 mb-3">Enrollments</p><TrendChart data={data.enrollmentSeries} kind="line" name="Enrollments" color="var(--success)" /></div>
             <div className="surface p-5"><p className="text-h4 mb-3">Leads captured</p><TrendChart data={data.leadSeries} kind="line" name="Leads" color="var(--info)" /></div>
             <div className="surface p-5"><p className="text-h4 mb-3">Course completions</p><TrendChart data={data.completionSeries} name="Completions" color="var(--warning)" /></div>
@@ -55,7 +55,7 @@ export default async function AdminAnalyticsPage({ searchParams }: { searchParam
           </section>
           <section className="grid gap-4 lg:grid-cols-3">
             <div className="surface p-5"><p className="text-h4 mb-3">Leads by source</p><BarsChart data={data.leadsBySource.map((s) => ({ label: enumLabel(s.source), value: s.value }))} horizontal height={Math.max(180, data.leadsBySource.length * 36)} name="Leads" /></div>
-            <div className="surface p-5"><p className="text-h4 mb-3">Revenue by provider</p><BarsChart data={data.revenueByProvider.map((s) => ({ label: enumLabel(s.provider), value: Math.round(s.value) }))} format={(v) => formatMoney(v)} horizontal height={Math.max(180, data.revenueByProvider.length * 36)} name="Revenue" color="var(--success)" /></div>
+            <div className="surface p-5"><p className="text-h4 mb-3">Revenue by provider</p><BarsChart data={data.revenueByProvider.map((s) => ({ label: enumLabel(s.provider), value: Math.round(s.value) }))} format="money" horizontal height={Math.max(180, data.revenueByProvider.length * 36)} name="Revenue" color="var(--success)" /></div>
             <div className="surface p-5"><p className="text-h4 mb-3">Assignment pipeline</p><BarsChart data={data.assignments.map((s) => ({ label: enumLabel(s.status), value: s.value }))} horizontal height={Math.max(180, data.assignments.length * 36)} name="Submissions" color="var(--info)" /></div>
           </section>
         </div>
