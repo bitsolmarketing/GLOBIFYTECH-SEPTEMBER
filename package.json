@@ -19,7 +19,9 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset --force",
     "worker": "tsx src/server/jobs/worker.ts",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build"
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "db:dev": "node scripts/pg-dev.mjs",
+    "db:dev:reset": "node -e \"require('fs').rmSync('.pgdata',{recursive:true,force:true})\" && node scripts/pg-dev.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -70,6 +72,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
     "@types/nodemailer": "^8.0.1",
