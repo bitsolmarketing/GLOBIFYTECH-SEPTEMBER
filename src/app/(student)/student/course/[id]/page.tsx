@@ -7,7 +7,7 @@ import { nextLessonFor } from "@/server/services/progress";
 import { evaluateEnrollment } from "@/server/services/completion";
 import { isAiConfigured } from "@/server/ai/provider";
 import { CoursePlayer, type PlayerLesson } from "@/components/lms/course-player";
-import { toNumber } from "@/lib/utils";
+import { hoursAgo, toNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default async function CoursePlayerPage({ params, searchParams }: { param
   if (!flat.length) notFound();
   const lessonId = sp.lesson && flat.some((l) => l.id === sp.lesson) ? sp.lesson : ((await nextLessonFor(enrollment.id))?.id ?? flat[0]!.id);
   const [lesson, lessonProgress, videoProgress, notes, bookmarks, discussions, evaluation, invoiceBlock] = await Promise.all([
-    prisma.lesson.findUnique({ where: { id: lessonId }, include: { video: true, resources: { orderBy: { order: "asc" }, include: { media: true } }, quiz: { select: { id: true, title: true, attempts: { where: { studentId }, orderBy: { startedAt: "desc" }, take: 1 } } }, assignment: { select: { id: true, title: true, dueAt: true, submissions: { where: { studentId }, orderBy: { createdAt: "desc" }, take: 1, select: { status: true } } } }, project: { select: { id: true, title: true, deadline: true, submissions: { where: { studentId }, orderBy: { createdAt: "desc" }, take: 1, select: { status: true } } } }, liveClasses: { where: { startsAt: { gte: new Date(Date.now() - 3 * 3600000) } }, orderBy: { startsAt: "asc" }, take: 1 } } }),
+    prisma.lesson.findUnique({ where: { id: lessonId }, include: { video: true, resources: { orderBy: { order: "asc" }, include: { media: true } }, quiz: { select: { id: true, title: true, attempts: { where: { studentId }, orderBy: { startedAt: "desc" }, take: 1 } } }, assignment: { select: { id: true, title: true, dueAt: true, submissions: { where: { studentId }, orderBy: { createdAt: "desc" }, take: 1, select: { status: true } } } }, project: { select: { id: true, title: true, deadline: true, submissions: { where: { studentId }, orderBy: { createdAt: "desc" }, take: 1, select: { status: true } } } }, liveClasses: { where: { startsAt: { gte: hoursAgo(3) } }, orderBy: { startsAt: "asc" }, take: 1 } } }),
     prisma.lessonProgress.findMany({ where: { enrollmentId: enrollment.id }, select: { lessonId: true, status: true } }),
     prisma.videoProgress.findUnique({ where: { enrollmentId_lessonId: { enrollmentId: enrollment.id, lessonId } } }),
     prisma.lessonNote.findMany({ where: { studentId, lessonId }, orderBy: { createdAt: "desc" } }),

@@ -8,14 +8,14 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatTile } from "@/components/lms/dashboard-widgets";
 import { FunnelChart, BarsChart } from "@/components/charts";
 import { Badge, statusVariant } from "@/components/ui/badge";
-import { enumLabel, relativeTime } from "@/lib/utils";
+import { daysAgo, enumLabel, relativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Admissions" };
 export const dynamic = "force-dynamic";
 
 export default async function AdmissionsPage() {
   await requirePermission("applications.read");
-  const since = new Date(Date.now() - 30 * 86400000);
+  const since = daysAgo(30);
   const [stats, stageCounts, appCounts, pending, byCourse, campaigns] = await Promise.all([
     crmStats(),
     prisma.lead.groupBy({ by: ["stage"], where: { deletedAt: null, createdAt: { gte: since } }, _count: { _all: true } }),

@@ -8,8 +8,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenu
 
 export function ThemeToggle({ labels }: { labels?: { light: string; dark: string; system: string; toggle: string } }) {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  // False while rendering on the server, true once hydrated, so the icon
+  // matches the resolved theme without a hydration mismatch.
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const l = labels ?? { light: "Light", dark: "Dark", system: "System", toggle: "Theme" };
   return (
     <DropdownMenu>

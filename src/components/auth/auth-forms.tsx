@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/form";
 import { Alert } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 
 function PasswordInput(props: React.ComponentProps<typeof Input>) {
   const [show, setShow] = React.useState(false);

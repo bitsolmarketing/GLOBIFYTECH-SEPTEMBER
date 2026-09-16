@@ -59,7 +59,7 @@ export function StudentCalendar({ items }: { items: CalendarItem[] }) {
                 </Link>
               </li>
             ))}
-            {!upcoming.length ? <li className="py-2 text-caption text-fg-muted">You're all caught up.</li> : null}
+            {!upcoming.length ? <li className="py-2 text-caption text-fg-muted">You’re all caught up.</li> : null}
           </ul>
         </section>
       </div>

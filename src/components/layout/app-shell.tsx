@@ -41,6 +41,40 @@ export interface AppShellProps {
 
 const STORAGE_KEY = "globify.sidebar";
 
+/**
+ * The sidebar preference lives in localStorage, which is a client-only value.
+ * Exposing it as an external store lets the server render the expanded layout
+ * and the client swap to the saved one at hydration, with no state set inside
+ * an effect and no flash of the wrong width.
+ */
+const sidebarListeners = new Set<() => void>();
+
+function readSidebarCollapsed(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "collapsed";
+  } catch {
+    return false;
+  }
+}
+
+function subscribeToSidebar(onChange: () => void): () => void {
+  sidebarListeners.add(onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    sidebarListeners.delete(onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function writeSidebarCollapsed(collapsed: boolean): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, collapsed ? "collapsed" : "expanded");
+  } catch {
+    /* private mode: the preference just will not persist */
+  }
+  for (const listener of sidebarListeners) listener();
+}
+
 function NavList({ groups, collapsed, onNavigate }: { groups: ShellNavGroup[]; collapsed: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
@@ -91,28 +125,13 @@ function NavList({ groups, collapsed, onNavigate }: { groups: ShellNavGroup[]; c
 }
 
 export function AppShell({ surface, groups, user, commands, children, surfaceLabel, searchPlaceholder }: AppShellProps) {
-  const [collapsed, setCollapsed] = React.useState(false);
+  const collapsed = React.useSyncExternalStore(subscribeToSidebar, readSidebarCollapsed, () => false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [paletteOpen, setPaletteOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem(STORAGE_KEY) === "collapsed");
-    } catch {
-      /* ignore */
-    }
-  }, []);
 
-  const toggleCollapsed = () => {
-    setCollapsed((c) => {
-      try {
-        localStorage.setItem(STORAGE_KEY, !c ? "collapsed" : "expanded");
-      } catch {
-        /* ignore */
-      }
-      return !c;
-    });
-  };
+
+  const toggleCollapsed = () => writeSidebarCollapsed(!collapsed);
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

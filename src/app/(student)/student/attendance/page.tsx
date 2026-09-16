@@ -26,7 +26,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
     <div className="flex flex-col gap-6">
       <PageHeader title="Attendance" description={`Stay above ${warning}% to remain eligible for certification.`} />
       <section className="surface p-5">
-        <h2 className="text-h4 mb-1">Check in to today's class</h2>
+        <h2 className="text-h4 mb-1">Check in to today’s class</h2>
         <p className="mb-3 text-body-sm text-fg-muted">Scan the QR your instructor shows at the start of the session.</p>
         <QrCheckIn initialToken={token} />
       </section>

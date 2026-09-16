@@ -4,14 +4,15 @@ import { PageHero } from "@/components/marketing/page-hero";
 import { EventsSection } from "@/components/marketing/sections/misc";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buildMetadata } from "@/lib/seo";
+import { daysAgo } from "@/lib/utils";
 
 export const revalidate = 300;
 export const metadata: Metadata = buildMetadata({ title: "Events", description: "Open days, workshops, webinars and demo days at Globify Tech, Faisalabad and online.", path: "/events" });
 
 export default async function EventsPage() {
   const [upcoming, past] = await Promise.all([
-    prisma.event.findMany({ where: { status: "PUBLISHED", startsAt: { gte: new Date(Date.now() - 86400000) } }, orderBy: { startsAt: "asc" }, take: 30, include: { cover: { select: { url: true, alt: true } }, campus: { select: { city: true } } } }),
-    prisma.event.findMany({ where: { status: { in: ["PUBLISHED", "COMPLETED"] }, startsAt: { lt: new Date(Date.now() - 86400000) } }, orderBy: { startsAt: "desc" }, take: 6, include: { cover: { select: { url: true, alt: true } }, campus: { select: { city: true } } } }),
+    prisma.event.findMany({ where: { status: "PUBLISHED", startsAt: { gte: daysAgo(1) } }, orderBy: { startsAt: "asc" }, take: 30, include: { cover: { select: { url: true, alt: true } }, campus: { select: { city: true } } } }),
+    prisma.event.findMany({ where: { status: { in: ["PUBLISHED", "COMPLETED"] }, startsAt: { lt: daysAgo(1) } }, orderBy: { startsAt: "desc" }, take: 6, include: { cover: { select: { url: true, alt: true } }, campus: { select: { city: true } } } }),
   ]);
   return (
     <>

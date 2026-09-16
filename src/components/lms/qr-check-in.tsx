@@ -32,7 +32,7 @@ export function QrCheckIn({ initialToken }: { initialToken?: string }) {
   if (done) {
     return (
       <div className="flex items-center gap-3 rounded-lg border border-success/30 bg-success-soft p-4 text-sm text-success">
-        <CheckCircle2 className="size-5" /> You're marked present for today's session.
+        <CheckCircle2 className="size-5" /> You’re marked present for today’s session.
       </div>
     );
   }

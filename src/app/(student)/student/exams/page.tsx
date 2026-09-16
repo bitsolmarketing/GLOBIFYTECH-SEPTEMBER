@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StartExamButton } from "@/components/lms/start-buttons";
-import { enumLabel, formatDateTime } from "@/lib/utils";
+import { enumLabel, epochMs, formatDateTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Exams" };
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function ExamsPage() {
       {exams.length ? (
         <ul className="grid gap-4 md:grid-cols-2">
           {exams.map((e) => {
-            const opensSoon = !e.scheduledAt || e.scheduledAt.getTime() - Date.now() <= 15 * 60 * 1000;
+            const opensSoon = !e.scheduledAt || e.scheduledAt.getTime() - epochMs() <= 15 * 60 * 1000;
             const attemptsLeft = e.attemptLimit - e.attempts.length;
             return (
               <li key={e.id} className="surface flex flex-col gap-4 p-5">

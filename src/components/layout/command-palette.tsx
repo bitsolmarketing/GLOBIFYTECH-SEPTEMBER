@@ -43,20 +43,13 @@ export function CommandPalette({
   const [query, setQuery] = React.useState("");
   const [hits, setHits] = React.useState<SearchHit[]>([]);
   const [loading, setLoading] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setHits([]);
-    }
-  }, [open]);
+  const term = query.trim();
+  // Derived rather than stored, so a short query never shows stale results.
+  const results = term.length < 2 ? [] : hits;
 
   React.useEffect(() => {
     const q = query.trim();
-    if (q.length < 2) {
-      setHits([]);
-      return;
-    }
+    if (q.length < 2) return;
     const controller = new AbortController();
     const t = setTimeout(async () => {
       setLoading(true);
@@ -78,8 +71,16 @@ export function CommandPalette({
     };
   }, [query]);
 
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setQuery("");
+      setHits([]);
+    }
+    onOpenChange(next);
+  };
+
   const go = (href: string) => {
-    onOpenChange(false);
+    handleOpenChange(false);
     router.push(href);
   };
 
@@ -89,13 +90,13 @@ export function CommandPalette({
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} title={placeholder}>
+    <CommandDialog open={open} onOpenChange={handleOpenChange} title={placeholder}>
       <CommandInput placeholder={placeholder} value={query} onValueChange={setQuery} />
       <CommandList>
         <CommandEmpty>{loading ? <Loader2 className="mx-auto size-4 animate-spin" /> : "Nothing matches. Try a different word."}</CommandEmpty>
-        {hits.length ? (
+        {results.length ? (
           <CommandGroup heading="Results">
-            {hits.map((h) => (
+            {results.map((h) => (
               <CommandItem key={`${h.type}-${h.id}`} value={`${h.title} ${h.subtitle ?? ""} ${h.type}`} onSelect={() => go(h.href)}>
                 <ArrowRight />
                 <span className="flex min-w-0 flex-col">

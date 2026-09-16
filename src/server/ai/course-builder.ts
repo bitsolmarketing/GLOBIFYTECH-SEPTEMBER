@@ -47,7 +47,7 @@ export type CourseOutline = z.infer<typeof outlineSchema>;
 export async function generateCourseOutline(brief: CourseBrief, requestedById: string) {
   await enforceRateLimit(`ai:builder:${requestedById}`, 10, 3600);
   const model = await getModel();
-  const { object, usage } = await generateObject({
+  const { object } = await generateObject({
     model,
     schema: outlineSchema,
     system: `${BRAND_VOICE}\nYou design practical, project-first curricula. Every module must produce something a student can show a client or employer. Lessons are short and concrete. Quizzes test understanding, not memorisation. Avoid filler.`,
@@ -99,8 +99,8 @@ export async function applyGeneration(id: string, actorId: string, options: { co
     }
     const moduleOffset = await tx.courseModule.count({ where: { courseId: cId } });
     for (const [mi, m] of outline.modules.entries()) {
-      const module = await tx.courseModule.create({ data: { courseId: cId, title: m.title, description: m.description, order: moduleOffset + mi, isPublished: false } });
-      const unit = await tx.courseUnit.create({ data: { moduleId: module.id, title: m.title, order: 0 } });
+      const courseModule = await tx.courseModule.create({ data: { courseId: cId, title: m.title, description: m.description, order: moduleOffset + mi, isPublished: false } });
+      const unit = await tx.courseUnit.create({ data: { moduleId: courseModule.id, title: m.title, order: 0 } });
       let li = 0;
       for (const l of m.lessons) {
         await tx.lesson.create({ data: { unitId: unit.id, title: l.title, slug: `${slugify(l.title)}-${li}`, type: l.type, objectives: l.objectives, durationSeconds: l.durationMinutes * 60, order: li++, isPublished: false } });

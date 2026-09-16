@@ -10,18 +10,18 @@ import { Badge, statusVariant } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { enumLabel, formatDate, formatDateTime } from "@/lib/utils";
+import { daysAgo, daysAhead, enumLabel, formatDate, formatDateTime, nowUtc } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Attendance" };
 export const dynamic = "force-dynamic";
 
 export default async function AttendancePage() {
   await requirePermission("attendance.read");
-  const since = new Date(Date.now() - 30 * 86400000);
+  const since = daysAgo(30);
   const [batches, warning, upcoming, lowStudents] = await Promise.all([
     prisma.batch.findMany({ where: { deletedAt: null, status: { in: ["OPEN", "RUNNING"] } }, orderBy: { startDate: "desc" }, include: { course: { select: { title: true } }, instructor: { select: { user: { select: { name: true } } } }, attendance: { where: { sessionDate: { gte: since } }, select: { status: true, sessionDate: true } }, _count: { select: { students: { where: { leftAt: null } } } } } }),
     getSetting("attendance.warningPercent"),
-    prisma.liveClass.findMany({ where: { status: "SCHEDULED", startsAt: { gte: new Date(), lte: new Date(Date.now() + 7 * 86400000) } }, orderBy: { startsAt: "asc" }, take: 10, include: { course: { select: { title: true } }, batch: { select: { id: true, code: true } } } }),
+    prisma.liveClass.findMany({ where: { status: "SCHEDULED", startsAt: { gte: nowUtc(), lte: daysAhead(7) } }, orderBy: { startsAt: "asc" }, take: 10, include: { course: { select: { title: true } }, batch: { select: { id: true, code: true } } } }),
     prisma.attendance.groupBy({ by: ["studentId", "batchId"], where: { sessionDate: { gte: since } }, _count: { _all: true } }),
   ]);
   const absent = await prisma.attendance.groupBy({ by: ["studentId", "batchId"], where: { sessionDate: { gte: since }, status: "ABSENT" }, _count: { _all: true } });
@@ -74,7 +74,7 @@ export default async function AttendancePage() {
             <ul className="surface divide-y divide-border">
               {upcoming.map((c) => <li key={c.id} className="flex items-center justify-between gap-2 px-4 py-2 text-sm"><span className="min-w-0"><span className="block truncate font-medium"><Video className="me-1 inline size-3.5 text-accent" />{c.title}</span><span className="block text-caption text-fg-subtle">{c.course.title}{c.batch ? ` · ${c.batch.code}` : ""}</span></span><span className="shrink-0 text-caption text-fg-muted">{formatDateTime(c.startsAt)}</span></li>)}
             </ul>
-          ) : <p className="surface p-4 text-caption text-fg-muted">Nothing scheduled in the next 7 days. Today is {formatDate(new Date())}.</p>}
+          ) : <p className="surface p-4 text-caption text-fg-muted">Nothing scheduled in the next 7 days. Today is {formatDate(nowUtc())}.</p>}
         </div>
       </section>
     </div>

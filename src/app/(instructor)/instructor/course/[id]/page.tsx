@@ -105,7 +105,7 @@ export default async function InstructorCoursePage({ params, searchParams }: { p
         </TabsContent>
         <TabsContent value="completion">
           <div className="surface max-w-2xl p-6">
-            <p className="mb-4 text-body-sm text-fg-muted">These rules decide when a student's enrollment is marked complete and a certificate is issued.</p>
+            <p className="mb-4 text-body-sm text-fg-muted">These rules decide when a student’s enrollment is marked complete and a certificate is issued.</p>
             <CompletionRulesForm courseId={course.id} initial={course.completionRules[0] ? { requireAllLessons: course.completionRules[0].requireAllLessons, minAttendancePercent: course.completionRules[0].minAttendancePercent, minQuizPercent: course.completionRules[0].minQuizPercent, minExamPercent: course.completionRules[0].minExamPercent, requireProjects: course.completionRules[0].requireProjects, requirePaymentClear: course.completionRules[0].requirePaymentClear, autoIssueCertificate: course.completionRules[0].autoIssueCertificate, certificateValidityMonths: course.completionRules[0].certificateValidityMonths } : { requireAllLessons: true, minAttendancePercent: null, minQuizPercent: null, minExamPercent: null, requireProjects: false, requirePaymentClear: false, autoIssueCertificate: true, certificateValidityMonths: null }} />
           </div>
         </TabsContent>

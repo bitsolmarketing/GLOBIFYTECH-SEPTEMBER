@@ -110,7 +110,7 @@ export function SecurityActions() {
   const [pending, start] = React.useTransition();
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-body-sm text-fg-muted">Signed in somewhere you don't recognise? Sign out of every device, including this one.</p>
+      <p className="text-body-sm text-fg-muted">Signed in somewhere you don’t recognise? Sign out of every device, including this one.</p>
       <Button
         variant="secondary"
         className="w-fit"

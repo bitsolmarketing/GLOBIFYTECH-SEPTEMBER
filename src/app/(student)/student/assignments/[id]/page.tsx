@@ -94,7 +94,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
           <div className="surface sticky top-20 p-6">
             {canSubmit ? (
               overdue && !assignment.allowLate ? (
-                <p className="text-body-sm text-fg-muted">The deadline has passed and late submissions aren't accepted. Contact your instructor.</p>
+                <p className="text-body-sm text-fg-muted">The deadline has passed and late submissions aren’t accepted. Contact your instructor.</p>
               ) : (
                 <>
                   <h2 className="text-h4 mb-1">{latest?.status === "REVISION_REQUESTED" ? "Resubmit" : latest?.status === "DRAFT" ? "Continue your draft" : "Submit your work"}</h2>

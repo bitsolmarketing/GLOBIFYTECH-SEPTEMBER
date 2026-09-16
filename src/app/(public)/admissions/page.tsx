@@ -36,7 +36,7 @@ export default async function AdmissionsPage() {
         <div className="flex flex-col gap-6 lg:col-span-6">
           <h2 className="text-h2">Fees, installments and scholarships</h2>
           <p className="text-body text-fg-muted">Every course has a fee plan with monthly installments. Merit and need-based scholarships cover up to 50% of fees for eligible students — ask your counsellor during the call. Bank transfer, JazzCash, Easypaisa and cards are accepted.</p>
-          <h3 className="text-h4">What you'll need</h3>
+          <h3 className="text-h4">What you’ll need</h3>
           <ul className="list-disc space-y-1 ps-5 text-body text-fg-muted">
             <li>CNIC or B-Form (photo or scan)</li>
             <li>Latest education certificate or transcript</li>

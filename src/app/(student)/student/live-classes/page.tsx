@@ -7,7 +7,7 @@ import { Badge, statusVariant } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { JoinLiveButton } from "@/components/lms/join-live-button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { enumLabel, formatDateTime } from "@/lib/utils";
+import { enumLabel, epochMs, formatDateTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Live classes" };
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function LiveClassesPage() {
   const { studentId } = await requireStudentProfile();
   const classes = await liveClassesForStudent(studentId);
-  const now = Date.now();
+  const now = epochMs();
   const upcoming = classes.filter((c) => c.status !== "CANCELLED" && c.endsAt.getTime() >= now - 3600000 && c.status !== "COMPLETED");
   const past = classes.filter((c) => !upcoming.includes(c)).reverse();
 

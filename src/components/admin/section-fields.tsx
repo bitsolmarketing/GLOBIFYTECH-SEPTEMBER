@@ -64,6 +64,39 @@ export function defaultSectionData(type: string): Record<string, unknown> {
 type Data = Record<string, unknown>;
 type Cta = { label: string; href: string };
 
+/** Label and link for a call-to-action button stored on the section data. */
+function CtaFields({ k, label, optional, value, onChange }: { k: string; label: string; optional?: boolean; value: Cta; onChange: (next: Cta) => void }) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-2">
+      <Field label={`${label} text`} htmlFor={`${k}-label`} hint={optional ? "Leave blank to hide." : undefined}>
+        <Input id={`${k}-label`} value={value.label} onChange={(e) => onChange({ ...value, label: e.target.value })} />
+      </Field>
+      <Field label={`${label} link`} htmlFor={`${k}-href`}>
+        <Input id={`${k}-href`} value={value.href} onChange={(e) => onChange({ ...value, href: e.target.value })} placeholder="/courses" />
+      </Field>
+    </div>
+  );
+}
+
+/** How many records a data-driven section should render. */
+function LimitField({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <Field label="How many to show" htmlFor="sf-limit">
+      <Input id="sf-limit" type="number" min={1} max={12} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </Field>
+  );
+}
+
+/** Shared title and subtitle used by most section types. */
+function HeadingFields({ title, subtitle, onChange }: { title: string; subtitle: string; onChange: (patch: { title?: string; subtitle?: string }) => void }) {
+  return (
+    <>
+      <Field label="Title" htmlFor="sf-title"><Input id="sf-title" value={title} onChange={(e) => onChange({ title: e.target.value })} /></Field>
+      <Field label="Subtitle" htmlFor="sf-sub"><Textarea id="sf-sub" rows={2} value={subtitle} onChange={(e) => onChange({ subtitle: e.target.value })} /></Field>
+    </>
+  );
+}
+
 export function SectionFields({ type, data, onChange, errors, categories, courses }: { type: string; data: Data; onChange: (d: Data) => void; errors: Record<string, string[]>; categories: Array<{ id: string; name: string }>; courses: Array<{ id: string; title: string }> }) {
   const set = (patch: Data) => onChange({ ...data, ...patch });
   const str = (k: string) => (data[k] as string | undefined) ?? "";
@@ -73,19 +106,6 @@ export function SectionFields({ type, data, onChange, errors, categories, course
   const items = (data.items as Array<Record<string, string>> | undefined) ?? [];
   const setItems = (next: Array<Record<string, string>>) => set({ items: next });
 
-  const CtaFields = ({ k, label, optional }: { k: string; label: string; optional?: boolean }) => (
-    <div className="grid gap-2 sm:grid-cols-2">
-      <Field label={`${label} text`} htmlFor={`${k}-label`} hint={optional ? "Leave blank to hide." : undefined}><Input id={`${k}-label`} value={cta(k).label} onChange={(e) => set({ [k]: { ...cta(k), label: e.target.value } })} /></Field>
-      <Field label={`${label} link`} htmlFor={`${k}-href`}><Input id={`${k}-href`} value={cta(k).href} onChange={(e) => set({ [k]: { ...cta(k), href: e.target.value } })} placeholder="/courses" /></Field>
-    </div>
-  );
-  const LimitField = () => <Field label="How many to show" htmlFor="sf-limit"><Input id="sf-limit" type="number" min={1} max={12} value={num("limit", 6)} onChange={(e) => set({ limit: Number(e.target.value) })} /></Field>;
-  const HeadingFields = () => (
-    <>
-      <Field label="Title" htmlFor="sf-title"><Input id="sf-title" value={str("title")} onChange={(e) => set({ title: e.target.value })} /></Field>
-      <Field label="Subtitle" htmlFor="sf-sub"><Textarea id="sf-sub" rows={2} value={str("subtitle")} onChange={(e) => set({ subtitle: e.target.value })} /></Field>
-    </>
-  );
 
   switch (type) {
     case "HERO":
@@ -95,8 +115,8 @@ export function SectionFields({ type, data, onChange, errors, categories, course
           <Field label="Headline" htmlFor="sf-head" error={errors.headline} required><Input id="sf-head" value={str("headline")} onChange={(e) => set({ headline: e.target.value })} /></Field>
           <Field label="Second headline line" htmlFor="sf-head2"><Input id="sf-head2" value={str("headline2")} onChange={(e) => set({ headline2: e.target.value })} /></Field>
           <Field label="Subheadline" htmlFor="sf-subhead"><Textarea id="sf-subhead" rows={2} value={str("subheadline")} onChange={(e) => set({ subheadline: e.target.value })} /></Field>
-          <CtaFields k="primaryCta" label="Primary button" />
-          <CtaFields k="secondaryCta" label="Secondary button" optional />
+          <CtaFields k="primaryCta" label="Primary button" value={cta("primaryCta")} onChange={(v) => set({ primaryCta: v })} />
+          <CtaFields k="secondaryCta" label="Secondary button" optional value={cta("secondaryCta")} onChange={(v) => set({ secondaryCta: v })} />
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Layout" htmlFor="sf-variant"><SimpleSelect value={str("variant") || "cinematic"} onValueChange={(v) => set({ variant: v })} options={[{ value: "cinematic", label: "Cinematic" }, { value: "minimal", label: "Minimal" }, { value: "split", label: "Split" }]} /></Field>
             <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2"><Label htmlFor="sf-3d">Show the 3D scene</Label><Switch id="sf-3d" checked={bool("show3d", true)} onCheckedChange={(v) => set({ show3d: v })} /></div>
@@ -134,7 +154,7 @@ export function SectionFields({ type, data, onChange, errors, categories, course
     case "COURSE_GRID":
       return (
         <>
-          <HeadingFields />
+          <HeadingFields title={str("title")} subtitle={str("subtitle")} onChange={set} />
           <Field label="Source" htmlFor="sf-mode"><SimpleSelect value={str("mode") || "featured"} onValueChange={(v) => set({ mode: v })} options={[{ value: "featured", label: "Featured courses" }, { value: "latest", label: "Latest courses" }, { value: "category", label: "From a category" }, { value: "manual", label: "Hand-picked" }]} /></Field>
           {str("mode") === "category" ? <Field label="Category" htmlFor="sf-cat"><SimpleSelect value={(data.categoryId as string) || "none"} onValueChange={(v) => set({ categoryId: v === "none" ? null : v })} options={[{ value: "none", label: "Choose a category" }, ...categories.map((c) => ({ value: c.id, label: c.name }))]} /></Field> : null}
           {str("mode") === "manual" ? (
@@ -147,7 +167,7 @@ export function SectionFields({ type, data, onChange, errors, categories, course
                 })}
               </div>
             </div>
-          ) : <LimitField />}
+          ) : <LimitField value={num("limit", 6)} onChange={(n) => set({ limit: n })} />}
           <Field label="Button text" htmlFor="sf-cta"><Input id="sf-cta" value={str("ctaLabel")} onChange={(e) => set({ ctaLabel: e.target.value })} placeholder="See all courses" /></Field>
         </>
       );
@@ -158,16 +178,16 @@ export function SectionFields({ type, data, onChange, errors, categories, course
     case "SUCCESS_STORIES":
       return (
         <>
-          <HeadingFields />
-          <LimitField />
+          <HeadingFields title={str("title")} subtitle={str("subtitle")} onChange={set} />
+          <LimitField value={num("limit", 6)} onChange={(n) => set({ limit: n })} />
         </>
       );
     case "INSTRUCTOR_GRID":
     case "TESTIMONIALS":
       return (
         <>
-          <HeadingFields />
-          <LimitField />
+          <HeadingFields title={str("title")} subtitle={str("subtitle")} onChange={set} />
+          <LimitField value={num("limit", 6)} onChange={(n) => set({ limit: n })} />
           <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2"><Label htmlFor="sf-feat">Featured only</Label><Switch id="sf-feat" checked={bool("featuredOnly", true)} onCheckedChange={(v) => set({ featuredOnly: v })} /></div>
         </>
       );
@@ -176,7 +196,7 @@ export function SectionFields({ type, data, onChange, errors, categories, course
         <>
           <Field label="Title" htmlFor="sf-title"><Input id="sf-title" value={str("title")} onChange={(e) => set({ title: e.target.value })} /></Field>
           <Field label="FAQ group" htmlFor="sf-group" hint="Matches the group on each FAQ entry."><Input id="sf-group" value={str("group") || "general"} onChange={(e) => set({ group: e.target.value })} /></Field>
-          <LimitField />
+          <LimitField value={num("limit", 6)} onChange={(n) => set({ limit: n })} />
         </>
       );
     case "STATS":
@@ -190,7 +210,7 @@ export function SectionFields({ type, data, onChange, errors, categories, course
       return (
         <>
           <Field label="Eyebrow" htmlFor="sf-eyebrow"><Input id="sf-eyebrow" value={str("eyebrow")} onChange={(e) => set({ eyebrow: e.target.value })} /></Field>
-          <HeadingFields />
+          <HeadingFields title={str("title")} subtitle={str("subtitle")} onChange={set} />
           <Field label="Layout" htmlFor="sf-layout"><SimpleSelect value={str("layout") || "grid"} onValueChange={(v) => set({ layout: v })} options={[{ value: "grid", label: "Grid" }, { value: "list", label: "List" }, { value: "bento", label: "Bento" }]} /></Field>
           <ItemList items={items} onChange={setItems} fields={[{ key: "icon", label: "Icon", placeholder: "Sparkles" }, { key: "title", label: "Title" }, { key: "description", label: "Description", textarea: true }]} addLabel="Add feature" min={2} />
         </>
@@ -226,8 +246,8 @@ export function SectionFields({ type, data, onChange, errors, categories, course
         <>
           <Field label="Title" htmlFor="sf-title" error={errors.title} required><Input id="sf-title" value={str("title")} onChange={(e) => set({ title: e.target.value })} /></Field>
           <Field label="Subtitle" htmlFor="sf-sub"><Textarea id="sf-sub" rows={2} value={str("subtitle")} onChange={(e) => set({ subtitle: e.target.value })} /></Field>
-          <CtaFields k="primaryCta" label="Primary button" />
-          <CtaFields k="secondaryCta" label="Secondary button" optional />
+          <CtaFields k="primaryCta" label="Primary button" value={cta("primaryCta")} onChange={(v) => set({ primaryCta: v })} />
+          <CtaFields k="secondaryCta" label="Secondary button" optional value={cta("secondaryCta")} onChange={(v) => set({ secondaryCta: v })} />
           <Field label="Style" htmlFor="sf-variant"><SimpleSelect value={str("variant") || "gradient"} onValueChange={(v) => set({ variant: v })} options={[{ value: "gradient", label: "Gradient" }, { value: "dark", label: "Dark" }, { value: "light", label: "Light" }]} /></Field>
         </>
       );

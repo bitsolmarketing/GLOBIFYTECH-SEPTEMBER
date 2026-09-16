@@ -88,9 +88,12 @@ export function QuestionBank({ quizId, examId, questions }: { quizId?: string; e
     const q = editing;
     let answerKey: unknown = undefined;
     if (q.type === "SHORT_ANSWER" || q.type === "FILL_BLANK") answerKey = { accepted: ((q.answerKey as { accepted?: string[] })?.accepted ?? []).filter(Boolean) };
-    if (q.type === "TRUE_FALSE" && (!q.options || q.options.length !== 2)) q.options = [{ id: "", text: "True", isCorrect: true, matchKey: null }, { id: "", text: "False", isCorrect: false, matchKey: null }];
+    const options =
+      q.type === "TRUE_FALSE" && (!q.options || q.options.length !== 2)
+        ? [{ id: "", text: "True", isCorrect: true, matchKey: null }, { id: "", text: "False", isCorrect: false, matchKey: null }]
+        : (q.options ?? []);
     start(async () => {
-      const res = await saveQuestionAction({ quizId, examId, questionId: q.id, input: { type: q.type as never, prompt: q.prompt ?? "", explanation: q.explanation ?? "", topic: q.topic ?? "", difficulty: (q.difficulty as never) ?? "MEDIUM", points: q.points ?? 1, codeLanguage: q.codeLanguage ?? "", codeStarter: q.codeStarter ?? "", options: (q.options ?? []).filter((o) => o.text.trim()).map((o) => ({ text: o.text, isCorrect: o.isCorrect, matchKey: o.matchKey })), answerKey } });
+      const res = await saveQuestionAction({ quizId, examId, questionId: q.id, input: { type: q.type as never, prompt: q.prompt ?? "", explanation: q.explanation ?? "", topic: q.topic ?? "", difficulty: (q.difficulty as never) ?? "MEDIUM", points: q.points ?? 1, codeLanguage: q.codeLanguage ?? "", codeStarter: q.codeStarter ?? "", options: options.filter((o) => o.text.trim()).map((o) => ({ text: o.text, isCorrect: o.isCorrect, matchKey: o.matchKey })), answerKey } });
       if (!res.ok) { toast.error(res.error.message); return; }
       toast.success("Question saved.");
       setEditing(null);

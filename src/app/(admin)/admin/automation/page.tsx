@@ -8,7 +8,7 @@ import { AdminTable, Row, Cell } from "@/components/admin/table";
 import { Badge, statusVariant } from "@/components/ui/badge";
 import { Alert } from "@/components/ui/alert";
 import { RunJobsButton } from "./run-jobs-button";
-import { enumLabel, formatDateTime, relativeTime } from "@/lib/utils";
+import { daysAgo, enumLabel, formatDateTime, relativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Automation" };
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export default async function AutomationPage() {
   await requirePermission("automation.manage");
   const [webhooks, failedNotifications, riskRun, lastBackup] = await Promise.all([
     prisma.webhookEvent.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
-    prisma.notification.count({ where: { status: "FAILED", createdAt: { gte: new Date(Date.now() - 7 * 86400000) } } }),
+    prisma.notification.count({ where: { status: "FAILED", createdAt: { gte: daysAgo(7) } } }),
     prisma.studentRiskScore.findFirst({ orderBy: { computedAt: "desc" }, select: { computedAt: true } }),
     prisma.setting.findUnique({ where: { key: "backup.lastHeartbeat" }, select: { value: true, updatedAt: true } }),
   ]);

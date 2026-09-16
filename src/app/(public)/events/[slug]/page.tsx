@@ -7,7 +7,7 @@ import { PageHero } from "@/components/marketing/page-hero";
 import { EventRegisterForm } from "@/components/marketing/event-register-form";
 import { JsonLd } from "@/components/seo/json-ld";
 import { buildMetadata, eventJsonLd } from "@/lib/seo";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, hoursAgo } from "@/lib/utils";
 import { site } from "@/config/site";
 
 export const revalidate = 300;
@@ -27,7 +27,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const { slug } = await params;
   const [event, session] = await Promise.all([getEvent(slug), getSession()]);
   if (!event) notFound();
-  const past = event.startsAt < new Date(Date.now() - 3 * 3600000);
+  const past = event.startsAt < hoursAgo(3);
   const full = !!event.capacity && event._count.registrations >= event.capacity;
   return (
     <>
@@ -61,7 +61,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             <h2 className="text-h4 mb-1">{past ? "This event has ended" : full ? "This event is full" : "Reserve your seat"}</h2>
             {!past && !full ? (
               <>
-                <p className="mb-4 text-body-sm text-fg-muted">Free to attend. We'll send a reminder before it starts.</p>
+                <p className="mb-4 text-body-sm text-fg-muted">Free to attend. We’ll send a reminder before it starts.</p>
                 <EventRegisterForm eventId={event.id} defaults={session ? { name: session.name, email: session.email } : undefined} />
               </>
             ) : (

@@ -175,7 +175,7 @@ export function CourseForm({ courseId, initial, categories, skills, instructors,
           <Field label="Price" htmlFor="c-price" error={errors.price}><Input id="c-price" type="number" min={0} value={form.price} onChange={(e) => set("price", Number(e.target.value))} /></Field>
           <Field label="Discount price" htmlFor="c-disc" error={errors.discountPrice}><Input id="c-disc" type="number" min={0} value={form.discountPrice ?? ""} onChange={(e) => set("discountPrice", e.target.value ? Number(e.target.value) : null)} /></Field>
           <Field label="Currency" htmlFor="c-cur"><SimpleSelect value={form.currency} onValueChange={(v) => set("currency", v)} options={[{ value: "PKR", label: "PKR" }, { value: "USD", label: "USD" }]} /></Field>
-          <p className="text-caption text-fg-muted sm:col-span-3">Installment plans are configured by finance under the course's fee plans after the course is saved.</p>
+          <p className="text-caption text-fg-muted sm:col-span-3">Installment plans are configured by finance under the course’s fee plans after the course is saved.</p>
         </TabsContent>
         <TabsContent value="seo" className="grid gap-4">
           <Field label="SEO title" htmlFor="c-seot" error={errors.seoTitle} hint="Up to 70 characters"><Input id="c-seot" value={form.seoTitle} onChange={(e) => set("seoTitle", e.target.value)} /></Field>

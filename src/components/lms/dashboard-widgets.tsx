@@ -86,7 +86,7 @@ export function CurrentCourseCard({ course, progress, lessonsCompleted, lessonsT
               </Button>
             </div>
           ) : (
-            <div className="rounded-lg border border-border bg-success-soft p-4 text-sm text-success">You've completed every lesson. Check your assessments and certificate.</div>
+            <div className="rounded-lg border border-border bg-success-soft p-4 text-sm text-success">You’ve completed every lesson. Check your assessments and certificate.</div>
           )}
         </div>
         <div className="relative hidden md:block">

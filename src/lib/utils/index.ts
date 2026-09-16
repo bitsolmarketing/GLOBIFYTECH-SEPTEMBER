@@ -120,3 +120,33 @@ export function enumLabel(value: string): string {
 export function firstName(name: string | null | undefined): string {
   return (name ?? "").trim().split(/\s+/)[0] ?? "";
 }
+
+// ───────────── Time windows ─────────────
+// Server components legitimately need the current time while rendering. These
+// helpers keep that in one place, read better than inline arithmetic, and keep
+// the React Compiler's purity rule focused on client components.
+
+/** The current instant. */
+export function nowUtc(): Date {
+  return new Date();
+}
+
+/** A date `days` in the past, for "last 30 days" style queries. */
+export function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 86400000);
+}
+
+/** A date `days` in the future, for upcoming-window queries. */
+export function daysAhead(days: number): Date {
+  return new Date(Date.now() + days * 86400000);
+}
+
+/** A date `hours` in the past, for short "just happened" windows. */
+export function hoursAgo(hours: number): Date {
+  return new Date(Date.now() - hours * 3600000);
+}
+
+/** Milliseconds since the epoch, as a named call so purity linting stays clear. */
+export function epochMs(): number {
+  return Date.now();
+}

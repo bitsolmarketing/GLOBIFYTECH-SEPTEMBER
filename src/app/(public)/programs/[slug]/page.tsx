@@ -50,7 +50,7 @@ export default async function ProgramPage({ params }: { params: Promise<{ slug: 
           {p.description ? <div className="prose-globify" dangerouslySetInnerHTML={{ __html: p.description }} /> : null}
           {p.outcomes.length ? (
             <section>
-              <h2 className="text-h2 mb-5">What you'll be able to do</h2>
+              <h2 className="text-h2 mb-5">What you’ll be able to do</h2>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {p.outcomes.map((o) => (
                   <li key={o} className="flex items-start gap-2.5 text-fg-muted">

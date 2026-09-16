@@ -38,10 +38,7 @@ export function AiChat({ endpoint, context, enabled, suggestions = [], initialMe
   const abortRef = React.useRef<AbortController | null>(null);
   const bottomRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    setMessages(initialMessages);
-    setConversationId(initialConversation);
-  }, [initialMessages, initialConversation]);
+
 
   React.useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -92,7 +89,7 @@ export function AiChat({ endpoint, context, enabled, suggestions = [], initialMe
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
         <Sparkles className="size-6 text-fg-subtle" />
-        <p className="text-sm font-medium">Globify AI isn't switched on yet.</p>
+        <p className="text-sm font-medium">Globify AI isn’t switched on yet.</p>
         <p className="text-caption text-fg-muted">{disabledMessage ?? "An administrator needs to add an AI provider key. Everything else works without it."}</p>
       </div>
     );
@@ -104,7 +101,7 @@ export function AiChat({ endpoint, context, enabled, suggestions = [], initialMe
         <div className={cn("flex flex-col gap-4", compact ? "p-4" : "p-6")}>
           {!messages.length ? (
             <div className="flex flex-col gap-3">
-              <p className="text-body-sm text-fg-muted">I can explain, give examples, quiz you, or tell you what to learn next. I won't do graded work for you — but I'll help you get unstuck.</p>
+              <p className="text-body-sm text-fg-muted">I can explain, give examples, quiz you, or tell you what to learn next. I won’t do graded work for you — but I’ll help you get unstuck.</p>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map((s) => (
                   <button key={s} type="button" onClick={() => void send(s)} className="rounded-full border border-border bg-surface px-3 py-1.5 text-caption text-fg-muted transition-colors hover:border-accent hover:text-accent">

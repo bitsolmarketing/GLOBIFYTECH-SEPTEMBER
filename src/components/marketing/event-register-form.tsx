@@ -15,8 +15,8 @@ export function EventRegisterForm({ eventId, defaults }: { eventId: string; defa
     return (
       <div className="flex flex-col items-center gap-2 py-6 text-center">
         <CheckCircle2 className="size-8 text-success" />
-        <p className="font-medium">You're registered.</p>
-        <p className="text-body-sm text-fg-muted">We've saved your seat. See you there.</p>
+        <p className="font-medium">You’re registered.</p>
+        <p className="text-body-sm text-fg-muted">We’ve saved your seat. See you there.</p>
       </div>
     );
   }

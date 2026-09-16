@@ -3,14 +3,15 @@ import { requireStudentProfile } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
 import { PageHeader } from "@/components/layout/page-header";
 import { StudentCalendar } from "./student-calendar";
+import { daysAgo, daysAhead } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Calendar" };
 export const dynamic = "force-dynamic";
 
 export default async function CalendarPage() {
   const { studentId } = await requireStudentProfile();
-  const from = new Date(Date.now() - 60 * 86400000);
-  const to = new Date(Date.now() + 120 * 86400000);
+  const from = daysAgo(60);
+  const to = daysAhead(120);
   const [memberships, enrollments] = await Promise.all([prisma.batchStudent.findMany({ where: { studentId, leftAt: null }, select: { batchId: true } }), prisma.enrollment.findMany({ where: { studentId, status: "ACTIVE" }, select: { courseId: true } })]);
   const batchIds = memberships.map((m) => m.batchId);
   const courseIds = enrollments.map((e) => e.courseId);

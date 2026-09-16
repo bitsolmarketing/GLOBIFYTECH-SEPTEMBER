@@ -14,7 +14,7 @@ export default function VerifyPage() {
         </div>
       </PageHero>
       <div className="container-x max-w-2xl py-12 text-body-sm text-fg-muted">
-        <p>Employers and institutions can verify credentials without contacting us. Verification pages show the holder's name, course, issue date and current status (valid, expired or revoked). Every lookup is logged for the holder's security.</p>
+        <p>Employers and institutions can verify credentials without contacting us. Verification pages show the holder’s name, course, issue date and current status (valid, expired or revoked). Every lookup is logged for the holder’s security.</p>
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import { getSession } from "@/server/auth/session";
 import { PageHero } from "@/components/marketing/page-hero";
 import { ApplyForm } from "@/components/marketing/apply-form";
 import { buildMetadata } from "@/lib/seo";
+import { daysAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = buildMetadata({ title: "Apply online", description: "Apply to a Globify Tech course in ten minutes. Admissions responds within two working days.", path: "/apply" });
@@ -13,7 +14,7 @@ export default async function ApplyPage({ searchParams }: { searchParams: Promis
   const courses = await prisma.course.findMany({
     where: { status: "PUBLISHED", deletedAt: null },
     orderBy: [{ featured: "desc" }, { title: "asc" }],
-    select: { id: true, slug: true, title: true, batches: { where: { status: { in: ["PLANNED", "OPEN"] }, deletedAt: null, startDate: { gte: new Date(Date.now() - 7 * 86400000) } }, orderBy: { startDate: "asc" }, select: { id: true, code: true, name: true, startDate: true, mode: true, capacity: true, _count: { select: { students: { where: { leftAt: null } } } } } } },
+    select: { id: true, slug: true, title: true, batches: { where: { status: { in: ["PLANNED", "OPEN"] }, deletedAt: null, startDate: { gte: daysAgo(7) } }, orderBy: { startDate: "asc" }, select: { id: true, code: true, name: true, startDate: true, mode: true, capacity: true, _count: { select: { students: { where: { leftAt: null } } } } } } },
   });
   const user = session ? await prisma.user.findUnique({ where: { id: session.id }, select: { firstName: true, lastName: true, name: true, email: true, phone: true } }) : null;
   const [first, ...rest] = (user?.name ?? "").split(" ");

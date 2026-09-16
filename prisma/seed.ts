@@ -253,7 +253,7 @@ async function main() {
   await seedDelivery({ campusId: campus.id, courseIds, instructorIds, studentIds, roleIds });
   await seedCrm({ courseIds, roleIds });
   await seedCareer({ skillIds, studentIds });
-  await seedContent({ categoryIds });
+  await seedContent();
 
   console.log("\nSeed complete. Sign in with:");
   console.log(`  super admin   superadmin@globifytech.com / ${PASSWORD}`);
@@ -498,7 +498,7 @@ async function seedCareer(ctx: { skillIds: Map<string, string>; studentIds: stri
 }
 
 // ───────── CMS: pages, navigation, blog, testimonials, FAQs, events ─────────
-async function seedContent(ctx: { categoryIds: Map<string, string> }) {
+async function seedContent() {
   const author = await prisma.user.findUnique({ where: { email: "admin@globifytech.com" }, select: { id: true } });
 
   // Home page from the shipped defaults.

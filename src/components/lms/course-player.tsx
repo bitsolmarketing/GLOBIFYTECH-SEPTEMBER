@@ -10,7 +10,7 @@ import { Button, IconButton } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge, statusVariant } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/toaster";
@@ -105,17 +105,29 @@ export function CoursePlayer({ course, curriculum, lesson, progress, startAt, no
   const [pending, start] = React.useTransition();
   const [celebrate, setCelebrate] = React.useState(false);
   const positionRef = React.useRef(startAt);
-  const lastSaved = React.useRef(Date.now());
+  // Seeded on mount rather than during render, which must stay pure.
+  const lastSaved = React.useRef(0);
   const watchedRef = React.useRef(0);
 
-  React.useEffect(() => {
+  // React's documented way to reset state when a prop changes: adjust during
+  // render rather than in an effect, which would render the stale lesson first.
+  const [renderedLessonId, setRenderedLessonId] = React.useState(lesson.id);
+  if (renderedLessonId !== lesson.id) {
+    setRenderedLessonId(lesson.id);
     setCompleted(lesson.completed);
     setNotes(initialNotes);
     setBookmarks(initialBookmarks);
+  }
+
+  React.useEffect(() => {
+    // Playback bookkeeping belongs to the lesson currently on screen.
     positionRef.current = startAt;
     watchedRef.current = 0;
+    lastSaved.current = Date.now();
     void startLessonAction(lesson.id);
-  }, [lesson.id, lesson.completed, initialNotes, initialBookmarks, startAt]);
+    // startAt is derived from the lesson, so the lesson id is the real trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id]);
 
   const markComplete = React.useCallback(() => {
     if (completed) return;
@@ -140,7 +152,10 @@ export function CoursePlayer({ course, curriculum, lesson, progress, startAt, no
       watchedRef.current += delta;
       positionRef.current = position;
       void saveVideoProgressAction({ lessonId: lesson.id, positionSeconds: position, percent, secondsWatched: delta });
-      if (percent >= 90 && !completed) setCompleted(true), setPct((p) => ({ ...p, completed: p.completed + 1, percent: Math.min(100, ((p.completed + 1) / Math.max(1, p.total)) * 100) }));
+      if (percent >= 90 && !completed) {
+        setCompleted(true);
+        setPct((p) => ({ ...p, completed: p.completed + 1, percent: Math.min(100, ((p.completed + 1) / Math.max(1, p.total)) * 100) }));
+      }
     },
     [lesson.id, completed],
   );
@@ -234,7 +249,7 @@ export function CoursePlayer({ course, curriculum, lesson, progress, startAt, no
                     <Button asChild><Link href="/student/live-classes">Open live classes</Link></Button>
                   </>
                 ) : (
-                  <p className="text-body-sm text-fg-muted">The session will be scheduled by your instructor. You'll be notified.</p>
+                  <p className="text-body-sm text-fg-muted">The session will be scheduled by your instructor. You’ll be notified.</p>
                 )}
               </div>
             ) : lesson.type === "QUIZ" && lesson.quiz ? (

@@ -5,7 +5,7 @@ import { env } from "@/config/env";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { NotificationCentre } from "./notification-centre";
-import { enumLabel } from "@/lib/utils";
+import { daysAgo, enumLabel } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Notifications" };
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function NotificationsPage() {
   const [templates, recent, stats, courses] = await Promise.all([
     prisma.notificationTemplate.findMany({ orderBy: [{ event: "asc" }, { channel: "asc" }] }),
     prisma.notification.findMany({ orderBy: { createdAt: "desc" }, take: 25, include: { user: { select: { name: true } } } }),
-    prisma.notification.groupBy({ by: ["channel", "status"], where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) } }, _count: { _all: true } }),
+    prisma.notification.groupBy({ by: ["channel", "status"], where: { createdAt: { gte: daysAgo(30) } }, _count: { _all: true } }),
     prisma.course.findMany({ where: { deletedAt: null, status: "PUBLISHED" }, select: { id: true, title: true }, orderBy: { title: "asc" } }),
   ]);
   const e = env();
