@@ -1,4 +1,5 @@
-import type { NextConfig } from "next";
+// Plain JavaScript on purpose: hosts whose glibc is too old for Next's native
+// SWC binary fall back to WebAssembly, which cannot compile a next.config.ts.
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
@@ -19,7 +20,8 @@ const securityHeaders = [
     : []),
 ];
 
-const nextConfig: NextConfig = {
+/** @type {import("next").NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   output: process.env.DOCKER_BUILD ? "standalone" : undefined,

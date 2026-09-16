@@ -27,7 +27,7 @@ The platform stores personal data (students, applicants), financial records, cre
 
 ### Web
 - CSRF: Server Actions are protected by Next.js origin checks; API routes accept JSON only and verify `Origin` for cookie sessions; webhooks verify provider signatures.
-- Security headers in `next.config.ts`: CSP (script-src self + nonce, frame-ancestors none), HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-Frame-Options.
+- Security headers in `next.config.mjs`: CSP (script-src self + nonce, frame-ancestors none), HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, X-Frame-Options.
 - XSS: React escaping + sanitized rich text + CSP.
 - Secrets: only in environment variables, validated at boot by `src/config/env.ts`; client bundle only receives `NEXT_PUBLIC_*`.
 

@@ -25,7 +25,7 @@ COPY . .
 # The schema must be generated before the build; the URL is only read at runtime.
 ENV NEXT_TELEMETRY_DISABLED=1 DOCKER_BUILD=1
 RUN pnpm prisma generate
-RUN pnpm exec next build
+RUN pnpm exec next build --webpack
 
 # ───────── runtime ─────────
 FROM base AS runner
