@@ -37,9 +37,17 @@ export interface ButtonProps extends React.ComponentProps<"button">, VariantProp
 }
 
 function Button({ className, variant, size, asChild = false, loading = false, children, disabled, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot.Root : "button";
+  // Slot forwards props onto the single child it is given, so it must receive
+  // exactly one element: no spinner, and no `disabled` (invalid on an anchor).
+  if (asChild) {
+    return (
+      <Slot.Root data-slot="button" className={cn(buttonVariants({ variant, size, className }))} aria-disabled={disabled || undefined} {...props}>
+        {children}
+      </Slot.Root>
+    );
+  }
   return (
-    <Comp
+    <button
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       disabled={disabled || loading}
@@ -48,7 +56,7 @@ function Button({ className, variant, size, asChild = false, loading = false, ch
     >
       {loading ? <Loader2 className="animate-spin" aria-hidden /> : null}
       {children}
-    </Comp>
+    </button>
   );
 }
 

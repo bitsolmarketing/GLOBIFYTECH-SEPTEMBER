@@ -11,8 +11,9 @@ export default function OpenGraphImage() {
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, background: "linear-gradient(135deg,#07080b 0%,#101318 60%,#0b1a3a 100%)", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg,#2563FF,#06B6D4 55%,#7C3AED)" }} />
-          <div style={{ fontSize: 34, fontWeight: 600, letterSpacing: -1 }}>
-            Globify <span style={{ color: "#a3abb8" }}>Tech</span>
+          <div style={{ display: "flex", gap: 10, fontSize: 34, fontWeight: 600, letterSpacing: -1 }}>
+            <span>Globify</span>
+            <span style={{ color: "#a3abb8" }}>Tech</span>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>

@@ -48,7 +48,7 @@ const wrap = async <T>(fn: () => Promise<T>): R<T> => {
 
 // ───────────── CRM ─────────────
 
-export const createLeadAction = (input: z.infer<typeof leadSchema>): R<{ id: string }> =>
+export const createLeadAction = async (input: z.infer<typeof leadSchema>): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.create");
     const lead = await crm.createLead(v(leadSchema, input), user.id);
@@ -57,7 +57,7 @@ export const createLeadAction = (input: z.infer<typeof leadSchema>): R<{ id: str
     return { id: lead.id };
   });
 
-export const updateLeadAction = (id: string, input: z.infer<typeof leadSchema>): R =>
+export const updateLeadAction = async (id: string, input: z.infer<typeof leadSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.update");
     await crm.updateLead(id, v(leadSchema, input), user.id);
@@ -65,7 +65,7 @@ export const updateLeadAction = (id: string, input: z.infer<typeof leadSchema>):
     revalidatePath("/admin/leads");
   });
 
-export const changeLeadStageAction = (input: z.infer<typeof leadStageChangeSchema>): R =>
+export const changeLeadStageAction = async (input: z.infer<typeof leadStageChangeSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.update");
     const d = v(leadStageChangeSchema, input);
@@ -75,7 +75,7 @@ export const changeLeadStageAction = (input: z.infer<typeof leadStageChangeSchem
     revalidatePath(`/admin/leads/${d.leadId}`);
   });
 
-export const assignLeadAction = (leadId: string, counsellorId: string | null): R =>
+export const assignLeadAction = async (leadId: string, counsellorId: string | null): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.assign");
     await crm.assignLead(leadId, counsellorId, user.id);
@@ -83,7 +83,7 @@ export const assignLeadAction = (leadId: string, counsellorId: string | null): R
     revalidatePath("/admin/leads");
   });
 
-export const logLeadActivityAction = (input: z.infer<typeof leadActivitySchema>): R =>
+export const logLeadActivityAction = async (input: z.infer<typeof leadActivitySchema>): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.update");
     const d = v(leadActivitySchema, input);
@@ -91,7 +91,7 @@ export const logLeadActivityAction = (input: z.infer<typeof leadActivitySchema>)
     revalidatePath(`/admin/leads/${d.leadId}`);
   });
 
-export const addLeadTaskAction = (input: z.infer<typeof leadTaskSchema>): R =>
+export const addLeadTaskAction = async (input: z.infer<typeof leadTaskSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.update");
     const d = v(leadTaskSchema, input);
@@ -99,14 +99,14 @@ export const addLeadTaskAction = (input: z.infer<typeof leadTaskSchema>): R =>
     revalidatePath(`/admin/leads/${d.leadId}`);
   });
 
-export const completeLeadTaskAction = (taskId: string, leadId: string): R =>
+export const completeLeadTaskAction = async (taskId: string, leadId: string): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.update");
     await crm.completeTask(taskId, user.id);
     revalidatePath(`/admin/leads/${leadId}`);
   });
 
-export const addLeadNoteAction = (input: z.infer<typeof leadNoteSchema>): R =>
+export const addLeadNoteAction = async (input: z.infer<typeof leadNoteSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.update");
     const d = v(leadNoteSchema, input);
@@ -114,7 +114,7 @@ export const addLeadNoteAction = (input: z.infer<typeof leadNoteSchema>): R =>
     revalidatePath(`/admin/leads/${d.leadId}`);
   });
 
-export const deleteLeadAction = (leadId: string): R =>
+export const deleteLeadAction = async (leadId: string): R =>
   wrap(async () => {
     const user = await requirePermission("crm.leads.delete");
     await crm.softDeleteLead(leadId);
@@ -122,7 +122,7 @@ export const deleteLeadAction = (leadId: string): R =>
     revalidatePath("/admin/leads");
   });
 
-export const upsertCampaignAction = (input: z.infer<typeof campaignSchema>, id?: string): R<{ id: string }> =>
+export const upsertCampaignAction = async (input: z.infer<typeof campaignSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("crm.campaigns.manage");
     const d = v(campaignSchema, input);
@@ -134,7 +134,7 @@ export const upsertCampaignAction = (input: z.infer<typeof campaignSchema>, id?:
 
 // ───────────── Admissions ─────────────
 
-export const decideApplicationAction = (input: z.infer<typeof applicationDecisionSchema>): R =>
+export const decideApplicationAction = async (input: z.infer<typeof applicationDecisionSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("applications.review");
     const d = v(applicationDecisionSchema, input);
@@ -147,7 +147,7 @@ export const decideApplicationAction = (input: z.infer<typeof applicationDecisio
 
 // ───────────── Students & instructors ─────────────
 
-export const adminCreateStudentAction = (input: { name: string; email: string; password?: string; phone?: string; city?: string; campusId?: string | null }): R<{ id: string }> =>
+export const adminCreateStudentAction = async (input: { name: string; email: string; password?: string; phone?: string; city?: string; campusId?: string | null }): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("students.create");
     const d = v(z.object({ name: nonEmpty.max(80), email: z.string().email(), password: z.string().min(10).optional().or(z.literal("")), phone: z.string().max(20).optional().or(z.literal("")), city: z.string().max(80).optional().or(z.literal("")), campusId: uuid.nullable().optional() }), input);
@@ -157,7 +157,7 @@ export const adminCreateStudentAction = (input: { name: string; email: string; p
     return { id: profile.id };
   });
 
-export const setUserStatusAction = (userId: string, status: "ACTIVE" | "SUSPENDED"): R =>
+export const setUserStatusAction = async (userId: string, status: "ACTIVE" | "SUSPENDED"): R =>
   wrap(async () => {
     const user = await requirePermission("students.update");
     if (userId === user.id) throw AppError.validation("You can't suspend yourself.");
@@ -167,7 +167,7 @@ export const setUserStatusAction = (userId: string, status: "ACTIVE" | "SUSPENDE
     revalidatePath("/admin/students");
   });
 
-export const setUserRolesAction = (userId: string, roles: RoleKey[]): R =>
+export const setUserRolesAction = async (userId: string, roles: RoleKey[]): R =>
   wrap(async () => {
     const user = await requirePermission("staff.manage");
     const valid = roles.filter((r) => (ROLE_KEYS as readonly string[]).includes(r));
@@ -181,7 +181,7 @@ export const setUserRolesAction = (userId: string, roles: RoleKey[]): R =>
     revalidatePath("/admin/instructors");
   });
 
-export const createInstructorAction = (input: instructors.InstructorInput): R<{ id: string }> =>
+export const createInstructorAction = async (input: instructors.InstructorInput): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("instructors.manage");
     const d = v(z.object({ name: nonEmpty.max(80), email: z.string().email(), password: z.string().min(10).optional().or(z.literal("")), phone: z.string().max(20).optional().or(z.literal("")), title: z.string().max(120).optional().or(z.literal("")), bio: z.string().max(3000).optional().or(z.literal("")), expertise: z.array(z.string().max(60)).max(20).default([]), yearsExperience: z.number().int().min(0).max(60).nullable().optional(), linkedinUrl: z.string().url().optional().or(z.literal("")), websiteUrl: z.string().url().optional().or(z.literal("")), isFeatured: z.boolean().default(false), isPublic: z.boolean().default(true), campusId: uuid.nullable().optional(), avatarMediaId: uuid.nullable().optional() }), input);
@@ -191,7 +191,7 @@ export const createInstructorAction = (input: instructors.InstructorInput): R<{ 
     return { id: p.id };
   });
 
-export const updateInstructorAction = (id: string, input: instructors.InstructorInput): R =>
+export const updateInstructorAction = async (id: string, input: instructors.InstructorInput): R =>
   wrap(async () => {
     const user = await requirePermission("instructors.manage");
     await instructors.updateInstructor(id, { ...input, password: input.password || undefined });
@@ -200,7 +200,7 @@ export const updateInstructorAction = (id: string, input: instructors.Instructor
     revalidatePath("/admin/instructors");
   });
 
-export const deactivateInstructorAction = (id: string): R =>
+export const deactivateInstructorAction = async (id: string): R =>
   wrap(async () => {
     const user = await requirePermission("instructors.manage");
     await instructors.deactivateInstructor(id);
@@ -210,7 +210,7 @@ export const deactivateInstructorAction = (id: string): R =>
 
 // ───────────── Batches, enrollments, campuses ─────────────
 
-export const saveBatchAction = (input: z.infer<typeof batchSchema>, id?: string): R<{ id: string }> =>
+export const saveBatchAction = async (input: z.infer<typeof batchSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("batches.manage");
     const d = v(batchSchema, input);
@@ -221,7 +221,7 @@ export const saveBatchAction = (input: z.infer<typeof batchSchema>, id?: string)
     return { id: b.id };
   });
 
-export const addStudentsToBatchAction = (input: z.infer<typeof batchStudentsSchema>): R =>
+export const addStudentsToBatchAction = async (input: z.infer<typeof batchStudentsSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("enrollments.manage");
     const d = v(batchStudentsSchema, input);
@@ -230,7 +230,7 @@ export const addStudentsToBatchAction = (input: z.infer<typeof batchStudentsSche
     revalidatePath(`/admin/batches/${d.batchId}`);
   });
 
-export const removeStudentFromBatchAction = (batchId: string, studentId: string): R =>
+export const removeStudentFromBatchAction = async (batchId: string, studentId: string): R =>
   wrap(async () => {
     const user = await requirePermission("enrollments.manage");
     await batches.removeStudentFromBatch(batchId, studentId);
@@ -238,7 +238,7 @@ export const removeStudentFromBatchAction = (batchId: string, studentId: string)
     revalidatePath(`/admin/batches/${batchId}`);
   });
 
-export const createEnrollmentAction = (input: z.infer<typeof enrollmentSchema>): R<{ id: string }> =>
+export const createEnrollmentAction = async (input: z.infer<typeof enrollmentSchema>): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("enrollments.manage");
     const d = v(enrollmentSchema, input);
@@ -249,7 +249,7 @@ export const createEnrollmentAction = (input: z.infer<typeof enrollmentSchema>):
     return { id: e.id };
   });
 
-export const setEnrollmentStatusAction = (id: string, status: "ACTIVE" | "PAUSED" | "DROPPED" | "EXPIRED"): R =>
+export const setEnrollmentStatusAction = async (id: string, status: "ACTIVE" | "PAUSED" | "DROPPED" | "EXPIRED"): R =>
   wrap(async () => {
     const user = await requirePermission("enrollments.manage");
     await enrollments.setEnrollmentStatus(id, status);
@@ -257,7 +257,7 @@ export const setEnrollmentStatusAction = (id: string, status: "ACTIVE" | "PAUSED
     revalidatePath("/admin/enrollments");
   });
 
-export const saveCampusAction = (input: z.infer<typeof campusSchema>, id?: string): R<{ id: string }> =>
+export const saveCampusAction = async (input: z.infer<typeof campusSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("settings.manage");
     const d = v(campusSchema, input);
@@ -267,7 +267,7 @@ export const saveCampusAction = (input: z.infer<typeof campusSchema>, id?: strin
     return { id: c.id };
   });
 
-export const saveClassroomAction = (input: z.infer<typeof classroomSchema>, id?: string): R<{ id: string }> =>
+export const saveClassroomAction = async (input: z.infer<typeof classroomSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("settings.manage");
     const d = v(classroomSchema, input);
@@ -279,7 +279,7 @@ export const saveClassroomAction = (input: z.infer<typeof classroomSchema>, id?:
 
 // ───────────── Catalogue structure ─────────────
 
-export const saveCategoryAction = (input: z.infer<typeof categorySchema>, id?: string): R<{ id: string }> =>
+export const saveCategoryAction = async (input: z.infer<typeof categorySchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("categories.manage");
     const d = v(categorySchema, input);
@@ -290,14 +290,14 @@ export const saveCategoryAction = (input: z.infer<typeof categorySchema>, id?: s
     return { id: c.id };
   });
 
-export const deleteCategoryAction = (id: string): R =>
+export const deleteCategoryAction = async (id: string): R =>
   wrap(async () => {
     await requirePermission("categories.manage");
     await prisma.category.update({ where: { id }, data: { isActive: false } });
     revalidatePath("/admin/categories");
   });
 
-export const saveProgramAction = (input: z.infer<typeof programSchema>, id?: string): R<{ id: string }> =>
+export const saveProgramAction = async (input: z.infer<typeof programSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("programs.manage");
     const d = v(programSchema, input);
@@ -314,7 +314,7 @@ export const saveProgramAction = (input: z.infer<typeof programSchema>, id?: str
     return { id: p.id };
   });
 
-export const setProgramStatusAction = (id: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED"): R =>
+export const setProgramStatusAction = async (id: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED"): R =>
   wrap(async () => {
     await requirePermission("programs.manage");
     await prisma.program.update({ where: { id }, data: { status, publishedAt: status === "PUBLISHED" ? new Date() : undefined } });
@@ -322,7 +322,7 @@ export const setProgramStatusAction = (id: string, status: "DRAFT" | "PUBLISHED"
     revalidatePath("/admin/programs");
   });
 
-export const saveLearningPathAction = (input: z.infer<typeof learningPathSchema>, id?: string): R<{ id: string }> =>
+export const saveLearningPathAction = async (input: z.infer<typeof learningPathSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("programs.manage");
     const d = v(learningPathSchema, input);
@@ -338,7 +338,7 @@ export const saveLearningPathAction = (input: z.infer<typeof learningPathSchema>
     return { id: p.id };
   });
 
-export const setLearningPathStatusAction = (id: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED"): R =>
+export const setLearningPathStatusAction = async (id: string, status: "DRAFT" | "PUBLISHED" | "ARCHIVED"): R =>
   wrap(async () => {
     await requirePermission("programs.manage");
     await prisma.learningPath.update({ where: { id }, data: { status, publishedAt: status === "PUBLISHED" ? new Date() : undefined } });
@@ -348,7 +348,7 @@ export const setLearningPathStatusAction = (id: string, status: "DRAFT" | "PUBLI
 
 // ───────────── Finance ─────────────
 
-export const saveFeePlanAction = (input: z.infer<typeof feePlanSchema>, id?: string): R<{ id: string }> =>
+export const saveFeePlanAction = async (input: z.infer<typeof feePlanSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("payments.create");
     const d = v(feePlanSchema, input);
@@ -359,7 +359,7 @@ export const saveFeePlanAction = (input: z.infer<typeof feePlanSchema>, id?: str
     return { id: p.id };
   });
 
-export const createInvoiceAction = (input: z.infer<typeof createInvoiceSchema>): R<{ id: string }> =>
+export const createInvoiceAction = async (input: z.infer<typeof createInvoiceSchema>): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("payments.create");
     const d = v(createInvoiceSchema, input);
@@ -369,7 +369,7 @@ export const createInvoiceAction = (input: z.infer<typeof createInvoiceSchema>):
     return { id: inv.id };
   });
 
-export const voidInvoiceAction = (id: string): R =>
+export const voidInvoiceAction = async (id: string): R =>
   wrap(async () => {
     const user = await requirePermission("payments.create");
     await finance.voidInvoice(id);
@@ -378,7 +378,7 @@ export const voidInvoiceAction = (id: string): R =>
     revalidatePath("/admin/invoices");
   });
 
-export const recordPaymentAction = (input: z.infer<typeof recordPaymentSchema>): R<{ receipt: string }> =>
+export const recordPaymentAction = async (input: z.infer<typeof recordPaymentSchema>): R<{ receipt: string }> =>
   wrap(async () => {
     const user = await requirePermission("payments.create");
     const d = v(recordPaymentSchema, input);
@@ -389,7 +389,7 @@ export const recordPaymentAction = (input: z.infer<typeof recordPaymentSchema>):
     return { receipt: r.receipt.number };
   });
 
-export const refundAction = (input: z.infer<typeof refundSchema>): R =>
+export const refundAction = async (input: z.infer<typeof refundSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("payments.refund");
     const d = v(refundSchema, input);
@@ -399,7 +399,7 @@ export const refundAction = (input: z.infer<typeof refundSchema>): R =>
     revalidatePath("/admin/payments");
   });
 
-export const saveDiscountAction = (input: z.infer<typeof discountSchema>, id?: string): R<{ id: string }> =>
+export const saveDiscountAction = async (input: z.infer<typeof discountSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("discounts.manage");
     const d = v(discountSchema, input);
@@ -410,7 +410,7 @@ export const saveDiscountAction = (input: z.infer<typeof discountSchema>, id?: s
     return { id: row.id };
   });
 
-export const saveScholarshipAction = (input: z.infer<typeof scholarshipSchema>, id?: string): R<{ id: string }> =>
+export const saveScholarshipAction = async (input: z.infer<typeof scholarshipSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("discounts.manage");
     const d = v(scholarshipSchema, input);
@@ -420,7 +420,7 @@ export const saveScholarshipAction = (input: z.infer<typeof scholarshipSchema>, 
     return { id: row.id };
   });
 
-export const awardScholarshipAction = (input: z.infer<typeof scholarshipAwardSchema>): R =>
+export const awardScholarshipAction = async (input: z.infer<typeof scholarshipAwardSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("discounts.manage");
     const d = v(scholarshipAwardSchema, input);
@@ -431,7 +431,7 @@ export const awardScholarshipAction = (input: z.infer<typeof scholarshipAwardSch
 
 // ───────────── Certificates ─────────────
 
-export const issueCertificateAction = (enrollmentId: string): R<{ number: string }> =>
+export const issueCertificateAction = async (enrollmentId: string): R<{ number: string }> =>
   wrap(async () => {
     const user = await requirePermission("certificates.issue");
     const c = await certs.issueCertificate({ enrollmentId, signedById: user.id });
@@ -440,7 +440,7 @@ export const issueCertificateAction = (enrollmentId: string): R<{ number: string
     return { number: c.certificateNumber };
   });
 
-export const revokeCertificateAction = (id: string, reason: string): R =>
+export const revokeCertificateAction = async (id: string, reason: string): R =>
   wrap(async () => {
     const user = await requirePermission("certificates.revoke");
     if (!reason.trim()) throw AppError.validation("Give a reason for revoking.");
@@ -450,7 +450,7 @@ export const revokeCertificateAction = (id: string, reason: string): R =>
     revalidatePath(`/admin/certificates/${id}`);
   });
 
-export const reinstateCertificateAction = (id: string): R =>
+export const reinstateCertificateAction = async (id: string): R =>
   wrap(async () => {
     const user = await requirePermission("certificates.revoke");
     await certs.reinstateCertificate(id);
@@ -458,7 +458,7 @@ export const reinstateCertificateAction = (id: string): R =>
     revalidatePath("/admin/certificates");
   });
 
-export const regenerateCertificatePdfAction = (id: string): R =>
+export const regenerateCertificatePdfAction = async (id: string): R =>
   wrap(async () => {
     await requirePermission("certificates.issue");
     await enqueue("certificate.render", { certificateId: id });
@@ -466,7 +466,7 @@ export const regenerateCertificatePdfAction = (id: string): R =>
 
 // ───────────── Career ─────────────
 
-export const saveEmployerAction = (input: z.infer<typeof employerSchema>, id?: string): R<{ id: string }> =>
+export const saveEmployerAction = async (input: z.infer<typeof employerSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("career.jobs.manage");
     const d = v(employerSchema, input);
@@ -475,7 +475,7 @@ export const saveEmployerAction = (input: z.infer<typeof employerSchema>, id?: s
     return { id: e.id };
   });
 
-export const saveJobAction = (input: z.infer<typeof jobSchema>, id?: string): R<{ id: string }> =>
+export const saveJobAction = async (input: z.infer<typeof jobSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("career.jobs.manage");
     const d = v(jobSchema, input);
@@ -485,7 +485,7 @@ export const saveJobAction = (input: z.infer<typeof jobSchema>, id?: string): R<
     return { id: j.id };
   });
 
-export const saveInternshipAction = (input: z.infer<typeof internshipSchema>, id?: string): R<{ id: string }> =>
+export const saveInternshipAction = async (input: z.infer<typeof internshipSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("career.jobs.manage");
     const d = v(internshipSchema, input);
@@ -495,7 +495,7 @@ export const saveInternshipAction = (input: z.infer<typeof internshipSchema>, id
     return { id: j.id };
   });
 
-export const setJobApplicationStatusAction = (input: z.infer<typeof jobApplicationStatusSchema>): R =>
+export const setJobApplicationStatusAction = async (input: z.infer<typeof jobApplicationStatusSchema>): R =>
   wrap(async () => {
     await requirePermission("career.jobs.manage");
     const d = v(jobApplicationStatusSchema, input);
@@ -506,7 +506,7 @@ export const setJobApplicationStatusAction = (input: z.infer<typeof jobApplicati
 
 // ───────────── CMS ─────────────
 
-export const savePageAction = (input: z.infer<typeof pageSchema> & { id?: string }): R<{ id: string }> =>
+export const savePageAction = async (input: z.infer<typeof pageSchema> & { id?: string }): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("cms.pages.manage");
     const d = v(pageSchema, input);
@@ -516,7 +516,7 @@ export const savePageAction = (input: z.infer<typeof pageSchema> & { id?: string
     return { id: p.id };
   });
 
-export const saveSectionAction = (input: z.infer<typeof pageSectionSchema> & { id?: string }): R<{ id: string }> =>
+export const saveSectionAction = async (input: z.infer<typeof pageSectionSchema> & { id?: string }): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.pages.manage");
     const d = v(pageSectionSchema, input);
@@ -525,28 +525,28 @@ export const saveSectionAction = (input: z.infer<typeof pageSectionSchema> & { i
     return { id: s.id };
   });
 
-export const duplicateSectionAction = (id: string, pageId: string): R =>
+export const duplicateSectionAction = async (id: string, pageId: string): R =>
   wrap(async () => {
     await requirePermission("cms.pages.manage");
     await cms.duplicateSection(id);
     revalidatePath(`/admin/pages/${pageId}`);
   });
 
-export const deleteSectionAction = (id: string, pageId: string): R =>
+export const deleteSectionAction = async (id: string, pageId: string): R =>
   wrap(async () => {
     await requirePermission("cms.pages.manage");
     await cms.deleteSection(id);
     revalidatePath(`/admin/pages/${pageId}`);
   });
 
-export const reorderSectionsAction = (pageId: string, ids: string[]): R =>
+export const reorderSectionsAction = async (pageId: string, ids: string[]): R =>
   wrap(async () => {
     await requirePermission("cms.pages.manage");
     await cms.reorderSections(pageId, ids);
     revalidatePath(`/admin/pages/${pageId}`);
   });
 
-export const setPageStatusAction = (input: z.infer<typeof publishSchema>): R =>
+export const setPageStatusAction = async (input: z.infer<typeof publishSchema>): R =>
   wrap(async () => {
     const user = await requirePermission("cms.publish");
     const d = v(publishSchema, input);
@@ -556,7 +556,7 @@ export const setPageStatusAction = (input: z.infer<typeof publishSchema>): R =>
     revalidatePath(`/admin/pages/${d.id}`);
   });
 
-export const saveNavigationItemAction = (input: z.infer<typeof navigationItemSchema> & { id?: string }): R<{ id: string }> =>
+export const saveNavigationItemAction = async (input: z.infer<typeof navigationItemSchema> & { id?: string }): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.navigation.manage");
     const d = v(navigationItemSchema, input);
@@ -565,21 +565,21 @@ export const saveNavigationItemAction = (input: z.infer<typeof navigationItemSch
     return { id: i.id };
   });
 
-export const deleteNavigationItemAction = (id: string): R =>
+export const deleteNavigationItemAction = async (id: string): R =>
   wrap(async () => {
     await requirePermission("cms.navigation.manage");
     await cms.deleteNavigationItem(id);
     revalidatePath("/admin/cms");
   });
 
-export const reorderNavigationAction = (ids: string[]): R =>
+export const reorderNavigationAction = async (ids: string[]): R =>
   wrap(async () => {
     await requirePermission("cms.navigation.manage");
     await cms.reorderNavigation(ids);
     revalidatePath("/admin/cms");
   });
 
-export const savePostAction = (input: z.infer<typeof blogPostSchema> & { id?: string }): R<{ id: string }> =>
+export const savePostAction = async (input: z.infer<typeof blogPostSchema> & { id?: string }): R<{ id: string }> =>
   wrap(async () => {
     const user = await requirePermission("cms.blog.manage");
     const d = v(blogPostSchema, input);
@@ -590,7 +590,7 @@ export const savePostAction = (input: z.infer<typeof blogPostSchema> & { id?: st
     return { id: p.id };
   });
 
-export const deletePostAction = (id: string): R =>
+export const deletePostAction = async (id: string): R =>
   wrap(async () => {
     const user = await requirePermission("cms.blog.manage");
     await cms.softDeletePost(id);
@@ -598,7 +598,7 @@ export const deletePostAction = (id: string): R =>
     revalidatePath("/admin/blog");
   });
 
-export const saveEventAction = (input: z.infer<typeof eventSchema>, id?: string): R<{ id: string }> =>
+export const saveEventAction = async (input: z.infer<typeof eventSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.content.manage");
     const d = v(eventSchema, input);
@@ -611,7 +611,7 @@ export const saveEventAction = (input: z.infer<typeof eventSchema>, id?: string)
     return { id: e.id };
   });
 
-export const saveTestimonialAction = (input: z.infer<typeof testimonialSchema>, id?: string): R<{ id: string }> =>
+export const saveTestimonialAction = async (input: z.infer<typeof testimonialSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.content.manage");
     const d = v(testimonialSchema, input);
@@ -622,7 +622,7 @@ export const saveTestimonialAction = (input: z.infer<typeof testimonialSchema>, 
     return { id: t.id };
   });
 
-export const deleteTestimonialAction = (id: string): R =>
+export const deleteTestimonialAction = async (id: string): R =>
   wrap(async () => {
     await requirePermission("cms.content.manage");
     await prisma.testimonial.delete({ where: { id } });
@@ -630,7 +630,7 @@ export const deleteTestimonialAction = (id: string): R =>
     revalidatePath("/admin/testimonials");
   });
 
-export const saveFaqAction = (input: z.infer<typeof faqSchema>, id?: string): R<{ id: string }> =>
+export const saveFaqAction = async (input: z.infer<typeof faqSchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.content.manage");
     const d = v(faqSchema, input);
@@ -640,7 +640,7 @@ export const saveFaqAction = (input: z.infer<typeof faqSchema>, id?: string): R<
     return { id: f.id };
   });
 
-export const deleteFaqAction = (id: string): R =>
+export const deleteFaqAction = async (id: string): R =>
   wrap(async () => {
     await requirePermission("cms.content.manage");
     await prisma.faq.delete({ where: { id } });
@@ -648,7 +648,7 @@ export const deleteFaqAction = (id: string): R =>
     revalidatePath("/admin/cms");
   });
 
-export const saveSuccessStoryAction = (input: z.infer<typeof successStorySchema>, id?: string): R<{ id: string }> =>
+export const saveSuccessStoryAction = async (input: z.infer<typeof successStorySchema>, id?: string): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.content.manage");
     const d = v(successStorySchema, input);
@@ -661,7 +661,7 @@ export const saveSuccessStoryAction = (input: z.infer<typeof successStorySchema>
     return { id: s.id };
   });
 
-export const deleteMediaAction = (id: string): R =>
+export const deleteMediaAction = async (id: string): R =>
   wrap(async () => {
     const user = await requirePermission("cms.media.manage");
     await media.deleteMedia(id);
@@ -669,14 +669,14 @@ export const deleteMediaAction = (id: string): R =>
     revalidatePath("/admin/media");
   });
 
-export const updateMediaAction = (id: string, input: { alt?: string; caption?: string; tags?: string[]; folderId?: string | null }): R =>
+export const updateMediaAction = async (id: string, input: { alt?: string; caption?: string; tags?: string[]; folderId?: string | null }): R =>
   wrap(async () => {
     await requirePermission("cms.media.manage");
     await prisma.media.update({ where: { id }, data: { alt: input.alt ?? undefined, caption: input.caption ?? undefined, tags: input.tags ?? undefined, folderId: input.folderId === undefined ? undefined : input.folderId } });
     revalidatePath("/admin/media");
   });
 
-export const createMediaFolderAction = (name: string, parentId?: string | null): R<{ id: string }> =>
+export const createMediaFolderAction = async (name: string, parentId?: string | null): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("cms.media.manage");
     const f = await prisma.mediaFolder.create({ data: { name: name.trim().slice(0, 60), parentId: parentId ?? null } });
@@ -686,7 +686,7 @@ export const createMediaFolderAction = (name: string, parentId?: string | null):
 
 // ───────────── Notifications ─────────────
 
-export const saveNotificationTemplateAction = (input: { id?: string; event: string; channel: string; locale: string; subject?: string; body: string; isActive: boolean }): R<{ id: string }> =>
+export const saveNotificationTemplateAction = async (input: { id?: string; event: string; channel: string; locale: string; subject?: string; body: string; isActive: boolean }): R<{ id: string }> =>
   wrap(async () => {
     await requirePermission("notifications.manage");
     const d = v(z.object({ id: uuid.optional(), event: z.string(), channel: z.string(), locale: z.string().max(5).default("en"), subject: z.string().max(200).optional().or(z.literal("")), body: nonEmpty.max(5000), isActive: z.boolean().default(true) }), input);
@@ -696,7 +696,7 @@ export const saveNotificationTemplateAction = (input: { id?: string; event: stri
     return { id: t.id };
   });
 
-export const broadcastAnnouncementAction = (input: { title: string; body: string; audience: "ALL_STUDENTS" | "ALL_INSTRUCTORS" | "COURSE"; courseId?: string | null; channels: string[] }): R<{ count: number }> =>
+export const broadcastAnnouncementAction = async (input: { title: string; body: string; audience: "ALL_STUDENTS" | "ALL_INSTRUCTORS" | "COURSE"; courseId?: string | null; channels: string[] }): R<{ count: number }> =>
   wrap(async () => {
     const user = await requirePermission("notifications.manage");
     const d = v(z.object({ title: nonEmpty.max(200), body: nonEmpty.max(5000), audience: z.enum(["ALL_STUDENTS", "ALL_INSTRUCTORS", "COURSE"]), courseId: uuid.nullable().optional(), channels: z.array(z.enum(["IN_APP", "EMAIL", "WHATSAPP", "SMS"])).min(1) }), input);
@@ -709,7 +709,7 @@ export const broadcastAnnouncementAction = (input: { title: string; body: string
 
 // ───────────── Settings, risk, automation ─────────────
 
-export const saveSettingsAction = (values: Record<string, unknown>): R =>
+export const saveSettingsAction = async (values: Record<string, unknown>): R =>
   wrap(async () => {
     const user = await requirePermission("settings.manage");
     for (const [key, value] of Object.entries(values)) {
@@ -720,27 +720,27 @@ export const saveSettingsAction = (values: Record<string, unknown>): R =>
     revalidatePath("/admin/settings");
   });
 
-export const acknowledgeRiskAction = (id: string): R =>
+export const acknowledgeRiskAction = async (id: string): R =>
   wrap(async () => {
     const user = await requirePermission("analytics.read");
     await acknowledgeRisk(id, user.id);
     revalidatePath("/admin/analytics");
   });
 
-export const recomputeRiskAction = (): R<{ processed: number; high: number }> =>
+export const recomputeRiskAction = async (): R<{ processed: number; high: number }> =>
   wrap(async () => {
     await requirePermission("analytics.read");
     return computeAllRisk();
   });
 
-export const runDailyJobsAction = (): R =>
+export const runDailyJobsAction = async (): R =>
   wrap(async () => {
     const user = await requirePermission("automation.manage");
     await enqueue("analytics.daily", {});
     await audit({ actorId: user.id, actorRoles: user.roles, action: "automation.run_daily", entityType: "Job" });
   });
 
-export const impersonationCheckAction = (): R<{ allowed: boolean }> =>
+export const impersonationCheckAction = async (): R<{ allowed: boolean }> =>
   wrap(async () => {
     const user = await requireUser();
     return { allowed: (await import("@/lib/rbac")).can(user, "users.impersonate") };
@@ -748,7 +748,7 @@ export const impersonationCheckAction = (): R<{ allowed: boolean }> =>
 
 // ───────────── Lookups used by admin forms ─────────────
 
-export const searchStudentsAction = (q: string): R<Array<{ id: string; label: string; email: string }>> =>
+export const searchStudentsAction = async (q: string): R<Array<{ id: string; label: string; email: string }>> =>
   wrap(async () => {
     await requirePermission("students.read");
     const term = q.trim();
@@ -759,7 +759,7 @@ export const searchStudentsAction = (q: string): R<Array<{ id: string; label: st
     return [...rows, ...byNumber].filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true))).map((r) => ({ id: r.id, label: `${r.user.name} · ${r.studentNumber}`, email: r.user.email }));
   });
 
-export const runPaymentRemindersAction = (): R =>
+export const runPaymentRemindersAction = async (): R =>
   wrap(async () => {
     const user = await requirePermission("payments.create");
     await finance.runPaymentReminders();
