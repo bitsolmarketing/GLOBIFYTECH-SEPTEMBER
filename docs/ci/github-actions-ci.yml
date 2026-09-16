@@ -1,0 +1,60 @@
+# Continuous integration for Globify Tech.
+#
+# Copy this file to .github/workflows/ci.yml to enable it. It lives here
+# because publishing a workflow needs a token with the workflow scope, which
+# the build tooling does not have.
+#
+# It runs migrations, the seed, typecheck, lint, the full test suite and a
+# production build against a real PostgreSQL, which is the same set of checks
+# used while building this project.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: globify
+          POSTGRES_PASSWORD: globify
+          POSTGRES_DB: globify_test
+        options: >-
+          --health-cmd "pg_isready -U globify"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgresql://globify:globify@localhost:5432/globify_test
+      TEST_DATABASE_URL: postgresql://globify:globify@localhost:5432/globify_test
+      AUTH_SECRET: ci-secret-ci-secret-ci-secret-ci
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - name: Apply migrations
+        run: pnpm db:deploy
+      - name: Seed demo data
+        run: pnpm db:seed
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
