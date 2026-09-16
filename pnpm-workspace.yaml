@@ -15,3 +15,8 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - ai
   - '@ai-sdk/*'
+
+# Flat node_modules (no symlinks). Hostinger copies Next's standalone output
+# and runs it from there; pnpm's symlinked layout left Next unable to resolve
+# its own dependencies (e.g. @swc/helpers) at runtime.
+nodeLinker: hoisted
